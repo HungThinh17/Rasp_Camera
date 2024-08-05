@@ -1,0 +1,7 @@
+DOCKER := "/cygdrive/c/Program Files/Docker/Docker/resources/bin/docker.exe"
+
+build:
+	$(DOCKER) build -t sli-images .
+
+run:
+	$(DOCKER) run -p 4000:80 -p 5678:5678 sli-images
