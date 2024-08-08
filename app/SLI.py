@@ -1,5 +1,19 @@
 #!/usr/bin/python
 
+# =============================================
+# For debugging ...
+# =============================================
+import sys
+if len(sys.argv) > 1:
+    if sys.argv[1] == "debug":
+        import debugpy
+        debugpy.listen(("0.0.0.0", 5678))
+        print("Waiting for debugger attach...")
+        debugpy.wait_for_client()
+        debugpy.breakpoint()
+        print("Debugger is attached!")
+# =============================================
+
 import time
 import math
 import numpy as np
@@ -9,22 +23,20 @@ import threading
 import os.path
 #import datetime
 
+
 from threading import Thread
 from module.mCamera import run_picamera, convert_array_to_file, auto_gain_PID
 from module.mGps import run_GPS
 from module.mKeyBoardCtrl import kbCtrl
 from module.mCommon import sysTimer
-from pynput.keyboard import Key
+# from pynput.keyboard import Key
 from module.mSQL import run_add_data
 from module.db_main import dbSLI
 from module.mGUI import display_GUI, mainGUI
 
 ##=====================================================
-
-
-
-##=====================================================
 # define a main function
+##=====================================================
 def main():    
 
     db_SLI = dbSLI()
@@ -61,7 +73,7 @@ def main():
     t2.start()
     t3.start()
     t4.start()
-    #t5.start()
+    t5.start()
     t6.start()
     #t10.start()
     t11.start()
@@ -168,7 +180,7 @@ def main():
     print("t3 closed")
     t4.join()
     print("t4 closed")
-    #t5.join()
+    t5.join()
     print("t5 closed")
     t6.join()
     print("t6 closed")

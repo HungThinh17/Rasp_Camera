@@ -1,7 +1,6 @@
-DOCKER := "/cygdrive/c/Program Files/Docker/Docker/resources/bin/docker.exe"
 
-build:
-	$(DOCKER) build -t sli-images .
-
-run:
-	$(DOCKER) run -p 4000:80 -p 5678:5678 sli-images
+debug:
+	ssh -X hungnp@192.168.1.17 "sudo -S rm -rf /home/hungnp/app"
+	scp -r ./app hungnp@192.168.1.17:/home/hungnp
+	ssh -X hungnp@192.168.1.17 "sudo -S python /home/hungnp/app/SLI.py debug"
+	ssh -L 5678:localhost:5678 hungnp@192.168.1.17

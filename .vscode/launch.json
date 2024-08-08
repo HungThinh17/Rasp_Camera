@@ -9,13 +9,13 @@
             "type": "debugpy",
             "request": "attach",
             "connect": {
-                "host": "localhost",
+                "host": "192.168.1.17",
                 "port": 5678
             },
             "pathMappings": [
                 {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/app"
+                    "localRoot": "${workspaceFolder}/app",
+                    "remoteRoot": "/home/hungnp/app"
                 }
             ]
         }

@@ -1,0 +1,9 @@
+numpy==1.23.0
+pynput==1.7.0
+debugpy==1.8.0
+keyboard==0.13.5
+picamera2==0.3.18
+simple_pid==2.0.1
+pymysql==0.1.1
+gps==3.19
+pynmea2==1.19.0
