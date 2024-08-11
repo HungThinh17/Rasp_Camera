@@ -2,11 +2,11 @@
 
 # Set up virtual environment
 setup_venv() {
-    if [ -d "venv" ]; then
-        rm -rf venv
+    if [ -d "mvenv" ]; then
+        rm -rf mvenv
     fi
-    python3 -m venv venv
-    source venv/bin/activate
+    python3 -m venv mvenv
+    source mvenv/bin/activate
     sudo apt-get update
 }
 
@@ -41,4 +41,4 @@ setup_venv
 xargs sudo apt-get -y remove < requiredPackage.txt
 
 # python app dependencies
-install_packages "requirements.txt" "pip" "pip install" || exit 1
+install_packages "requirements.txt" "pip" "pip uninstall -y --break-system-packages" || exit 1

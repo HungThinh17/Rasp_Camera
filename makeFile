@@ -18,5 +18,4 @@ removeDependencies:
 	ssh $(USER)@$(ADDRESS) "cd /home/$(USER)/app/ && sudo ./removeDependencies.sh"
 
 debug:
-	ssh -L 5678:localhost:5678 $(USER)@$(ADDRESS)
-	ssh -X $(USER)@$(ADDRESS) "sudo -S python /home/$(USER)/app/SLI.py debug"
+	ssh -X -L 5678:localhost:5678 $(USER)@$(ADDRESS) "sudo -S python /home/$(USER)/app/SLI.py debug"

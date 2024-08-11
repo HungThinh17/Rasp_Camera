@@ -2,7 +2,7 @@ debugpy==1.8.5
 exif==1.6.0
 gps==3.19
 keyboard==0.13.5
-numpy==1.19.0
+numpy==1.24.0
 Pillow==10.4.0
 pymysql==1.1.1
 pynmea2==1.19.0

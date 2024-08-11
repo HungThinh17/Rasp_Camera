@@ -1,11 +1,13 @@
 from __future__ import annotations
-import tkinter as tk
 from tkinter import *
-import time
-import numpy as np
 from PIL import Image, ImageTk
 from functools import partial
 from typing import TYPE_CHECKING
+import tkinter as tk
+import time
+import numpy as np
+import os
+
 if TYPE_CHECKING:
     from module.db_main import dbSLI
 
@@ -119,8 +121,8 @@ class classGUI:
         self.frame.pack()
         # create default backgroud img
         # image capturec
-        self.bg_img = Image.open("/home/dgmsli/Documents/10_project/00_mini_SLI/Digime.jpeg")
-        self.bg_img = self.bg_img.resize((1024, 530), Image.ANTIALIAS) #1024x600
+        self.bg_img = Image.open(os.path.join(os.path.dirname(__file__),"../Digime.jpeg"))
+        self.bg_img = self.bg_img.resize((1024, 530), Image.Resampling.LANCZOS) #1024x600
         self.bg_img = ImageTk.PhotoImage(self.bg_img)
         
         # button widget with image captured

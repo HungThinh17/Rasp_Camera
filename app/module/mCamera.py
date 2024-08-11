@@ -139,9 +139,9 @@ def convert_array_to_file(stop, db: dbSLI):
         
         if db.year_now != 0:
             dirname1 = str(db.year_now).zfill(4) + str(db.month_now).zfill(2) + str(db.day_now).zfill(2) 
-            symlink_path = "/home/dgmsli/Desktop/test_image"
+            symlink_path = os.path.join(os.path.dirname(__file__),"../storeImages")
 
-            path = symlink_path + "/" + dirname1
+            path = os.path.join(symlink_path, dirname1)
 
             if not os.path.isdir(path):
                 # if dir not exist -> create dir

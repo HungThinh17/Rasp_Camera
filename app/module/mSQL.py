@@ -53,11 +53,11 @@ class dbSQL:
 
 class m_SQL:
     def __init__(self) -> None:
-        self.mariadb_root = '/home/dgmsli/Documents/10_project/00_mini_SLI/data/db/' 
+        self.mariadb_root = '/home/hungnp/app/data/db/' 
 
         self.db_to_create = 'slidb'
 
-        self.conn = pymysql.connect(host='127.0.0.1',  user='dgmsli', passwd='20042020',  cursorclass=pymysql.cursors.DictCursor)
+        self.conn = pymysql.connect(host='localhost',  user='hungnp', passwd='1',  cursorclass=pymysql.cursors.DictCursor)
 
         print('Connection successful!!')
 

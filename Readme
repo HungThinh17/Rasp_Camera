@@ -1,0 +1,9 @@
+SLI IMAGES PROJECT
+
+Require manual configure
+
+1. Install Dependencies - run installDependencies.sh
+2. Install and setup mysql - run installMySql.sh
+3. Config raspi-config
+    .enable I2C
+    .enable UART

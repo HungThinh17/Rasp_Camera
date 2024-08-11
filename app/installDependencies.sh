@@ -2,11 +2,12 @@
 
 # Set up virtual environment
 setup_venv() {
-    if [ -d "venv" ]; then
-        sudo rm -rf venv
+    if [ -d "mvenv" ]; then
+        sudo rm -rf mvenv
     fi
-    # sudo python -m venv --system-site-packages venv
-    # source venv/bin/activate
+
+    python3 -m venv myenv
+    source myenv/bin/activate
     sudo apt-get update
 }
 
@@ -34,4 +35,4 @@ setup_venv
 xargs sudo apt-get -y install < requiredPackage.txt
 
 # python app dependencies
-install_packages "requirements.txt" "pip" "pip install"
+install_packages "requirements.txt" "pip" "pip install --break-system-packages"
