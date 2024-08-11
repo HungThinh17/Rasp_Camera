@@ -59,7 +59,7 @@ def main():
     # Thread: run GPS
     t4 = Thread(target=run_GPS, args =(lambda : stop_threads, db_SLI, ))
     # Thread: keyboard control
-    t5 = Thread(target=kbCtrl, args =(lambda : stop_threads, db_SLI))
+    # t5 = Thread(target=kbCtrl, args =(lambda : stop_threads, db_SLI))
     # Thread: input database
     t6 = Thread(target=run_add_data, args =(lambda : stop_threads, db_SLI))
     # Thread: GUI display
@@ -73,7 +73,7 @@ def main():
     t2.start()
     t3.start()
     t4.start()
-    t5.start()
+    # t5.start()
     t6.start()
     #t10.start()
     t11.start()
@@ -180,8 +180,8 @@ def main():
     print("t3 closed")
     t4.join()
     print("t4 closed")
-    t5.join()
-    print("t5 closed")
+    # t5.join()
+    # print("t5 closed")
     t6.join()
     print("t6 closed")
     #t10.join()

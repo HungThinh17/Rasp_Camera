@@ -1,6 +1,22 @@
+USER = hungnp
+ADDRESS = 192.168.1.17
+
+# USER = pi
+# ADDRESS = 127.0.0.1
+
+syncResource:
+	ssh $(USER)@$(ADDRESS) "sudo -S rm -rf /home/$(USER)/app"
+	scp -r ./app $(USER)@$(ADDRESS):/home/$(USER)
+	echo Done!
+
+installDependencies:
+	ssh $(USER)@$(ADDRESS) "sudo -S chmod +x /home/$(USER)/app/installDependencies.sh"
+	ssh $(USER)@$(ADDRESS) "cd /home/$(USER)/app/ && sudo ./installDependencies.sh"
+
+removeDependencies:
+	ssh $(USER)@$(ADDRESS) "sudo -S chmod +x /home/$(USER)/app/removeDependencies.sh"
+	ssh $(USER)@$(ADDRESS) "cd /home/$(USER)/app/ && sudo ./removeDependencies.sh"
 
 debug:
-	ssh -X hungnp@192.168.1.17 "sudo -S rm -rf /home/hungnp/app"
-	scp -r ./app hungnp@192.168.1.17:/home/hungnp
-	ssh -X hungnp@192.168.1.17 "sudo -S python /home/hungnp/app/SLI.py debug"
-	ssh -L 5678:localhost:5678 hungnp@192.168.1.17
+	ssh -L 5678:localhost:5678 $(USER)@$(ADDRESS)
+	ssh -X $(USER)@$(ADDRESS) "sudo -S python /home/$(USER)/app/SLI.py debug"

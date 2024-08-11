@@ -17,7 +17,8 @@
                     "localRoot": "${workspaceFolder}/app",
                     "remoteRoot": "/home/hungnp/app"
                 }
-            ]
+            ],
+            // "preLaunchTask": "debug"
         }
     ]
 }
