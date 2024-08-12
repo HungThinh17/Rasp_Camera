@@ -15,10 +15,11 @@
             "pathMappings": [
                 {
                     "localRoot": "${workspaceFolder}/app",
-                    "remoteRoot": "/home/hungnp/app"
+                    "remoteRoot": "/mnt/app"
                 }
             ],
-            // "preLaunchTask": "debug"
+            "preLaunchTask": "Make Debug in Background",
+            "postDebugTask": "Terminate Make Debug Task"
         }
     ]
 }

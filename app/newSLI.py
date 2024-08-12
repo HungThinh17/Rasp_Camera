@@ -1,14 +1,41 @@
+import sys
 import time
+import signal
+
+# =============================================
+# For debugging ...
+# =============================================
+if len(sys.argv) > 1:
+    import debugpy
+
+    if sys.argv[1] == "debug":
+        debugpy.listen(("0.0.0.0", 5678))
+        print("Waiting for debugger attach...")
+        debugpy.wait_for_client()
+        debugpy.breakpoint()
+        print("Debugger is attached!")
+    
+    def signal_handler(sig, frame):
+        print('Signal received, closing app...')
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+
+# =============================================
+
 from threading import Thread, Event
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 
-from app.module.db_main import dbSLI
-from app.module.mCamera import auto_gain_PID, convert_array_to_file, run_picamera
-from app.module.mCommon import sysTimer
-from app.module.mGUI import mainGUI
-from app.module.mGps import run_GPS
-from app.module.mSQL import run_add_data
+from module.db_main import dbSLI
+from module.mCamera import auto_gain_PID, convert_array_to_file, run_picamera
+from module.mCommon import sysTimer
+from module.mGUI import mainGUI
+from module.mGps import run_GPS
+from module.mSQL import run_add_data
+
+# Global list to hold thread objects
+gThreads = []
 
 class SystemState(Enum):
     INIT = 1
@@ -23,14 +50,41 @@ def initialize_system(db_SLI):
     print("Hello SLI Image !")
 
 def start_threads(db_SLI, stop_event):
-    with ThreadPoolExecutor() as executor:
-        executor.submit(sysTimer, stop_event, db_SLI)
-        executor.submit(run_picamera, stop_event, db_SLI)
-        executor.submit(convert_array_to_file, stop_event, db_SLI)
-        executor.submit(auto_gain_PID, stop_event, 110, db_SLI)
-        executor.submit(run_GPS, stop_event, db_SLI)
-        executor.submit(run_add_data, stop_event, db_SLI)
-        executor.submit(mainGUI, db_SLI)
+    threads = []
+
+    # Thread: system timer
+    timer_thread = Thread(target=sysTimer, args=(stop_event, db_SLI))
+    threads.append(timer_thread)
+
+    # Thread: capture camera
+    camera_thread = Thread(target=run_picamera, args=(stop_event, db_SLI))
+    threads.append(camera_thread)
+
+    # Thread: save image array to file
+    file_thread = Thread(target=convert_array_to_file, args=(stop_event, db_SLI))
+    threads.append(file_thread)
+
+    # Thread: PID control analog gain
+    gain_thread = Thread(target=auto_gain_PID, args=(stop_event, 110, db_SLI))
+    threads.append(gain_thread)
+
+    # Thread: run GPS
+    gps_thread = Thread(target=run_GPS, args=(stop_event, db_SLI))
+    threads.append(gps_thread)
+
+    # Thread: input database
+    data_thread = Thread(target=run_add_data, args=(stop_event, db_SLI))
+    threads.append(data_thread)
+
+    # Thread: GUI display
+    gui_thread = Thread(target=mainGUI, args=(db_SLI,))
+    threads.append(gui_thread)
+
+    # Start all threads
+    for thread in threads:
+        thread.start()
+
+    return threads
 
 def control_program_flow(db_SLI):
     while True:
@@ -73,7 +127,7 @@ def handle_user_input(db_SLI, system_state):
         db_SLI.clear_kbCtrl()
         db_SLI.imgGUI.set_btn_GUI_capture_single(False)
     elif db_SLI.kb == "c" or db_SLI.imgGUI.btn_GUI_exit:
-        stop_threads(db_SLI)
+        stop_threads(db_SLI, gThreads)
 
 def transition_to_run_state(db_SLI):
     db_SLI.sysState.set_state(SystemState.RUNNING)  # system run
@@ -97,26 +151,32 @@ def handle_idling(db_SLI, system_state):
         db_SLI.sysState.set_state(SystemState.IDLING_STOP)  # system idling stop
         print("system idling")
 
-def stop_threads(db_SLI):
+def stop_threads(db_SLI, threads):
     print("Closing all threads")
     db_SLI.clear_kbCtrl()
     db_SLI.imgGUI.set_btn_GUI_exit(False)
+
     # Stop and join threads here
+    for thread in threads:
+        thread.join()
 
 def main():
     db_SLI = dbSLI()
     initialize_system(db_SLI)
 
-    stop_event = Event()
-    start_threads(db_SLI, stop_event)
-    print("CPU serial number: ", db_SLI.CPU_serial)
+    stop_event = lambda:False 
+    try:
+        gThreads = start_threads(db_SLI, stop_event)
+        print("CPU serial number: ", db_SLI.CPU_serial)
+    except any as e:
+        print("Error starting threads:", e)
 
     try:
         control_program_flow(db_SLI)
     except KeyboardInterrupt:
         stop_event.set()
     finally:
-        stop_threads(db_SLI)
+        stop_threads(db_SLI, gThreads)
         print("All threads closed")
 
 if __name__ == "__main__":
