@@ -9,4 +9,4 @@ pynmea2==1.19.0
 pyserial==3.5
 simple_pid==2.0.1
 av==10.0.0
-picamera2==0.3.12
+picamera2==0.3.19

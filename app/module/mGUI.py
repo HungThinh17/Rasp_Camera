@@ -203,7 +203,7 @@ class classGUI:
 
             #array = np.ones((40,40))*150
             self.bg_img = Image.fromarray(db.imgGUI.lastImg)
-            self.bg_img = self.bg_img.resize((1024, 530), Image.ANTIALIAS)
+            self.bg_img = self.bg_img.resize((1024, 530), Image.Resampling.LANCZOS)
             #db.imgGUI.set_btn_capture_auto_img(ImageTk.PhotoImage(img))
             self.bg_img = ImageTk.PhotoImage(self.bg_img)
              # btn img
