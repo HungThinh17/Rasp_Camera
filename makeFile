@@ -1,7 +1,7 @@
-USER = hungnp
-ADDRESS = 192.168.1.17
 # USER = pi
 # ADDRESS = 127.0.0.1
+USER = hungnp
+ADDRESS = 192.168.1.17
 SHAREPOINT_ADDRESS = 192.168.1.8
 SHAREPOINT = /app
 MOUNTPOINT = /mnt/app
@@ -22,8 +22,8 @@ removeDependencies:
 
 debug:
 	ssh $(USER)@$(ADDRESS) "sudo chmod -R 777 /dev/serial0"
-	ssh -L 5678:localhost:5678 $(USER)@$(ADDRESS) "DISPLAY=:0 python $(MOUNTPOINT)/$(APP) debug"
+	ssh -L 5678:localhost:5678 $(USER)@$(ADDRESS) "DISPLAY=:10 python $(MOUNTPOINT)/$(APP) debug" || true
 
 cleanDebug:
-	ssh $(USER)@$(ADDRESS) "sudo pgrep -f newSLI.py | xargs kill"
-	@echo Done!
+	ssh $(USER)@$(ADDRESS) "sudo pgrep -f newSLI.py | xargs kill" || true
+	@echo Done! && exit

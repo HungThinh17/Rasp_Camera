@@ -1,2 +1,3 @@
 echo Hi there...
-exec sudo python ./SLI.py
+sudo chmod -R 777 /dev/serial0
+exec python ./SLI.py
