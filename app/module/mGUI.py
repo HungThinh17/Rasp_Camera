@@ -1,27 +1,27 @@
 from __future__ import annotations
+
+import os
+import time
+import tkinter as tk
+
 from tkinter import *
 from PIL import Image, ImageTk
-from functools import partial
 from typing import TYPE_CHECKING
-import tkinter as tk
-import time
-import numpy as np
-import os
 
 if TYPE_CHECKING:
     from module.db_main import dbSLI
 
 class dbGUI():
     def __init__(self) -> None:
-        
         self.lastImg = None     # last img array was captured
         self.newImg = False     # flat: lastImg array change
 
-        # 
+        # buttons 
         self.btn_GUI_exit = False               # True: exit whole program
         self.btn_GUI_capture_single = False     # True: trigger one capture; False: no capture
         self.btn_GUI_capture_auto = False       # True: change to auto capture; False: pause auto capture
         self.btn_GUI_Idling_cmd = True
+
         # label status parameter
         self.lbl_status_txt = "System status: "
         self.lbl_status_bg = "gold"
@@ -104,13 +104,8 @@ class dbGUI():
         self.btn_GUI_Idling_cmd = val
         return
     
-
-
-    
-
 class classGUI:
     def __init__(self, parent, db:'dbSLI') -> None:
-
         # root window title and dimension
         parent.title("Mini SLI")
         
@@ -119,8 +114,8 @@ class classGUI:
 
         self.frame = Frame(parent)
         self.frame.pack()
+
         # create default backgroud img
-        # image capturec
         self.bg_img = Image.open(os.path.join(os.path.dirname(__file__),"../Digime.jpeg"))
         self.bg_img = self.bg_img.resize((1024, 530), Image.Resampling.LANCZOS) #1024x600
         self.bg_img = ImageTk.PhotoImage(self.bg_img)
@@ -129,32 +124,28 @@ class classGUI:
         self.btn_img = tk.Button(parent, image = self.bg_img, command = lambda: self.btn_img_cmd(db))
         self.btn_img.place(x=0, y=0)
 
-        
-        self.label_status = tk.Label(parent, anchor="w", text="Initializing", width = 500,
-                                        font =("Courier", 13, "bold"), bg = "gold", fg = "black") # Create a text label
+        self.label_status = tk.Label(parent, anchor="w", text="Initializing", width = 500, \
+            font =("Courier", 13, "bold"), bg = "gold", fg = "black") # Create a text label
         self.label_status.place(x=0, y=0)
         
         # label for time, lat, lon, alt, satellite
-        self.label_time = tk.Label(parent, anchor="w", text= "Time: \nLat: \nLon: \nAlt: \nSatellite: \nSpeed: ", justify=LEFT,
-                                    font =("Courier", 13, "bold"), bg = "black", fg = "lime") # Create a text label
+        self.label_time = tk.Label(parent, anchor="w", text= "Time: \nLat: \nLon: \nAlt: \nSatellite: \nSpeed: ", justify=LEFT, \
+            font =("Courier", 13, "bold"), bg = "black", fg = "lime") # Create a text label
         self.label_time.place(x=0, y=20)
         
-        
-        
         # button exit
-        self.btn_exit = tk.Button(parent, text = "Exit", font = ("Courier", 10, "bold"),
-                                    bg = "red", fg = "white", height = 1, width = 3, command = lambda: self.btn_exit_cmd(db, parent))
+        self.btn_exit = tk.Button(parent, text = "Exit", font = ("Courier", 10, "bold"), \
+            bg = "red", fg = "white", height = 1, width = 3, command = lambda: self.btn_exit_cmd(db, parent))
         self.btn_exit.place(x=974, y=0)
         
-      
         # button capture
-        self.btn_man_cap = tk.Button(parent, text = "Capture", font = ("Courier", 13, "bold"),
-                                    bg = "lime", fg = "black", height = 3, width = 10, command = lambda: self.btn_man_cap_cmd(db))
+        self.btn_man_cap = tk.Button(parent, text = "Capture", font = ("Courier", 13, "bold"), \
+            bg = "lime", fg = "black", height = 3, width = 10, command = lambda: self.btn_man_cap_cmd(db))
         self.btn_man_cap.place(x=900, y=465)
 
         # button idling enable
-        self.btn_idling_enable = tk.Button(parent, text = "Idling", font = ("Courier", 13, "bold"),
-                                    bg = "lime", fg = "black", height = 3, width = 10, command = lambda: self.btn_idling_cmd(db))
+        self.btn_idling_enable = tk.Button(parent, text = "Idling", font = ("Courier", 13, "bold"), \
+            bg = "lime", fg = "black", height = 3, width = 10, command = lambda: self.btn_idling_cmd(db))
         self.btn_idling_enable.place(x=0, y=465)
 
         # callback
@@ -162,7 +153,6 @@ class classGUI:
 
     def btn_img_cmd(self, db:'dbSLI'):
         db.imgGUI.set_btn_GUI_capture_auto(True)
-        #db.imgGUI.set_btn_GUI_capture_auto(not db.imgGUI.btn_capture_auto_img)
         return
     
     # button is manual capture command
@@ -189,9 +179,7 @@ class classGUI:
             self._interval = None
         return
 
-    
     def update_GUI_parameter(self, db:'dbSLI'= None):
-    
         sysState = db.sysState.get_state()
         sysStateStr = str(sysState)
 
@@ -201,12 +189,9 @@ class classGUI:
             print("new image must be show")
             db.imgGUI.set_newImg(False)
 
-            #array = np.ones((40,40))*150
             self.bg_img = Image.fromarray(db.imgGUI.lastImg)
             self.bg_img = self.bg_img.resize((1024, 530), Image.Resampling.LANCZOS)
-            #db.imgGUI.set_btn_capture_auto_img(ImageTk.PhotoImage(img))
             self.bg_img = ImageTk.PhotoImage(self.bg_img)
-             # btn img
             self.btn_img.configure(image = self.bg_img)
 
         # label for status
@@ -237,29 +222,27 @@ class classGUI:
         secGUI = str(db.second_now).zfill(2)
         timeGUI = dayGUI + "-" + monthGUI +"-" + yearGUI + " " + hourGUI + ":" + minGUI + ":" + secGUI
         
+        # gps info
         latGUI = str(round(db.lat_now, 6))
         lonGUI = str(round(db.lon_now, 6))
         altGUI = str(db.alt_now)
         numSatGUI = str(db.numsat_now)
         speedGUI = str(round(db.speed_now, 2))
+        lbl_info_txt = "Time: " + timeGUI + "\nLat: " + latGUI + "\nLon: " +  lonGUI + "\nAlt: " + altGUI + \
+            "\nSatellite: "  + numSatGUI + "\nSpeed: " + speedGUI + " Km/h"
         
-        lbl_info_txt = "Time: " + timeGUI + "\nLat: " + latGUI + "\nLon: " +  lonGUI + "\nAlt: " + altGUI + "\nSatellite: "  + numSatGUI + "\nSpeed: " + speedGUI + " Km/h"
-
-        # update gui
-      
         # status label
         self.label_status.configure(text = db.imgGUI.lbl_status_txt, bg = db.imgGUI.lbl_status_bg)
+
         # status +_*/
         self.label_time.configure(text = lbl_info_txt, anchor="w", justify=LEFT)      
+
         # status idlingan
         self.btn_idling_enable.configure(text = db.imgGUI.lbl_idling_txt)     
-
-
 
         self.btn_img.after(100, lambda: self.update_GUI_parameter(db))
         
 def mainGUI(db:'dbSLI'):
-    
     time.sleep(2)
     root = tk.Tk()
     GUIne = classGUI(root, db)
@@ -273,7 +256,6 @@ def mainGUI(db:'dbSLI'):
 
 def display_GUI(stop, db: 'dbSLI'):
     db.imgGUI.btn_capture_auto_img = ImageTk.PhotoImage(db.imgGUI.btn_capture_auto_img)
-
     time.sleep(1)
 
     # root window title and dimension
@@ -281,8 +263,6 @@ def display_GUI(stop, db: 'dbSLI'):
     
     # Set geometry (widthxheight)
     db.rootGUI.geometry('1024x530')
-
-    
 
     statusVar = StringVar()
     timeVar = StringVar()
@@ -298,10 +278,6 @@ def display_GUI(stop, db: 'dbSLI'):
     altVar.set(db.imgGUI.lbl_alt_txt)
     numSatVar.set(db.imgGUI.lbl_numSat_txt)
 
-    
-
-    
-
     # function to change status of system pause to record and vice versa
     # button is clicked
     def btn_img_cmd():
@@ -312,9 +288,8 @@ def display_GUI(stop, db: 'dbSLI'):
     btn_img = tk.Button(db.imgGUI.root, image = db.imgGUI.btn_capture_auto_img, command = btn_img_cmd)
     btn_img.place(x=0, y=0)
 
-    
     label_status = tk.Label(db.rootGUI, anchor="w", textvariable=db.imgGUI.lbl_status_txt, width = 500,
-                                    font =("Courier", 13, "bold"), bg = db.imgGUI.lbl_status_bg, fg = "black") # Create a text label
+                                font =("Courier", 13, "bold"), bg = db.imgGUI.lbl_status_bg, fg = "black") # Create a text label
     label_status.place(x=0, y=0)
     
     # label for time
@@ -333,14 +308,13 @@ def display_GUI(stop, db: 'dbSLI'):
     label_lon.place(x=0, y=60)
     
     # label for alt
-    
     label_alt = tk.Label(db.rootGUI, anchor="w", textvariable=altVar,
                                 font =("Courier", 13, "bold"), bg = "black", fg = "lime") # Create a text label
     label_alt.place(x=0, y=80)
     
     # label for number of satalite
     label_numSat = tk.Label(db.rootGUI, anchor="w", textvariable=numSatVar,
-                                    font =("Courier", 13, "bold"), bg = "black", fg = "lime") # Create a text label
+                                font =("Courier", 13, "bold"), bg = "black", fg = "lime") # Create a text label
     label_numSat.place(x=0, y=100)
     
     # button is exit command
@@ -349,6 +323,7 @@ def display_GUI(stop, db: 'dbSLI'):
         db.imgGUI.root.quit()
         db.imgGUI.root.destroy()
         return
+    
     # button exit
     btn_exit = tk.Button(db.rootGUI, text = "Exit", font = ("Courier", 10, "bold"),
                                 bg = "red", fg = "white", height = 1, width = 3,
@@ -359,6 +334,7 @@ def display_GUI(stop, db: 'dbSLI'):
     def btn_man_cap_cmd():
         db.imgGUI.set_btn_GUI_capture_single(True)
         return
+    
     # button exit
     btn_man_cap = tk.Button(db.rootGUI, text = "Capture", font = ("Courier", 13, "bold"),
                                 bg = "lime", fg = "black", height = 3, width = 10,
@@ -374,7 +350,5 @@ def display_GUI(stop, db: 'dbSLI'):
     """
 
     db.rootGUI.after(250)
-
-    #db.imgGUI.root.update()
     db.rootGUI.mainloop()
 

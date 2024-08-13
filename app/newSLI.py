@@ -23,8 +23,7 @@ if len(sys.argv) > 1:
 
 # =============================================
 
-from threading import Thread, Event
-from concurrent.futures import ThreadPoolExecutor
+from threading import Thread
 from enum import Enum
 
 from module.db_main import dbSLI
@@ -97,7 +96,6 @@ def control_program_flow(db_SLI):
 def handle_system_state(db_SLI):
     cam_state = db_SLI.cameraState.get_state()
     gps_state = db_SLI.GpsState.get_state()
-    data_base_state = db_SLI.DataBaseState.get_state()
     sys_state = db_SLI.sysState.get_state()
 
     if cam_state == SystemState.RUNNING and gps_state == SystemState.RUNNING and \
@@ -118,9 +116,11 @@ def handle_camera_state(db_SLI, system_state):
             print("Auto capture interval")
 
 def handle_user_input(db_SLI, system_state):
-    if (db_SLI.kb == "r" or db_SLI.imgGUI.btn_GUI_capture_auto) and (system_state == SystemState.READY or system_state == SystemState.PAUSED):
+    if (db_SLI.kb == "r" or db_SLI.imgGUI.btn_GUI_capture_auto) and \
+       (system_state == SystemState.READY or system_state == SystemState.PAUSED):
         transition_to_run_state(db_SLI)
-    elif (db_SLI.kb == "r" or db_SLI.imgGUI.btn_GUI_capture_auto) and (system_state == SystemState.RUNNING or system_state == SystemState.IDLING_STOP):
+    elif (db_SLI.kb == "r" or db_SLI.imgGUI.btn_GUI_capture_auto) and \
+         (system_state == SystemState.RUNNING or system_state == SystemState.IDLING_STOP):
         transition_to_pause_state(db_SLI)
     elif db_SLI.kb == "a" or db_SLI.imgGUI.btn_GUI_capture_single:
         db_SLI.set_camera_ctrl_signal()

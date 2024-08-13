@@ -72,7 +72,7 @@ def run_picamera(stop):
         print("Camera initializing finish")
         print("Waiting capture signal")
         
-        while 1: #here waiting for capture signal
+        while True: #here waiting for capture signal
         #for exp in exposures:
         #for exp in range (10):
             
@@ -116,7 +116,7 @@ def convert_array_to_file(stop):
         # if dir not exist -> create dir
         os.mkdir(path)
         
-    while 1:
+    while True:
         if not list_image_array.empty():
             img = list_image_array.get(0)
             id = picture_id_queue.get(0)

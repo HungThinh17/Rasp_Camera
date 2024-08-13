@@ -1,18 +1,12 @@
 import queue
 import time
-from datetime import datetime, timezone
-from module.db_gps import dbGPS
 from module.db_cam_parameter import dbCamPara
 from module.mTimer import db_timer
 from module.db_img_metadata import dbImgMetadata
-from typing import List
 from module.mCommon import cFP
 from module.db_device_status import dbDeviceState
 from module.mSQL import m_SQL, dbSQL
-import numpy as np
 from module.mGUI import dbGUI
-import tkinter as tk
-from tkinter import *
 
 def getserial():
     # Extract serial from cpuinfo file
@@ -32,7 +26,6 @@ def getserial():
 class dbSLI:
     # contructor
     def __init__(self):
-
 
         # instance variable
         self.CPU_serial = getserial()

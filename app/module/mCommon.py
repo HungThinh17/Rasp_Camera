@@ -1,10 +1,10 @@
-
 from __future__ import annotations
+
 import time
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from module.db_main import dbSLI
-
 
 class cFP:
     def __init__(self):
@@ -26,7 +26,7 @@ def sysTimer(stop, db: 'dbSLI'):
     tn = time.perf_counter()
     tn1 = tn
 
-    while 1:
+    while True:
         tn = time.perf_counter()
         dt = 1000 * (tn - tn1)
         db.set_dt(dt)
