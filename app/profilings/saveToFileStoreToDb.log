@@ -1,0 +1,109 @@
+         230 function calls in 0.578 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.229    0.229    0.229    0.229 {method 'close' of '_io.BufferedRandom' objects}
+        1    0.148    0.148    0.148    0.148 {method 'encode_to_file' of 'ImagingEncoder' objects}
+        5    0.097    0.019    0.097    0.019 {built-in method posix.lstat}
+        1    0.060    0.060    0.060    0.060 {built-in method PIL._imaging.fill}
+        1    0.032    0.032    0.032    0.032 {method 'decode' of 'ImagingDecoder' objects}
+        1    0.010    0.010    0.010    0.010 {built-in method io.open}
+        1    0.000    0.000    0.486    0.486 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:2481(save)
+        1    0.000    0.000    0.149    0.149 /usr/local/lib/python3.11/dist-packages/PIL/JpegImagePlugin.py:633(_save)
+        1    0.000    0.000    0.097    0.097 <frozen posixpath>:421(_joinrealpath)
+        1    0.000    0.000    0.000    0.000 {built-in method PIL._imaging.jpeg_encoder}
+        1    0.000    0.000    0.093    0.093 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:3219(fromarray)
+        1    0.000    0.000    0.149    0.149 /usr/local/lib/python3.11/dist-packages/PIL/ImageFile.py:556(_encode_tile)
+        1    0.000    0.000    0.149    0.149 /usr/local/lib/python3.11/dist-packages/PIL/ImageFile.py:528(_save)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:571(_new)
+        1    0.000    0.000    0.093    0.093 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:3105(frombytes)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:424(_getdecoder)
+        1    0.000    0.000    0.032    0.032 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:851(frombytes)
+        1    0.000    0.000    0.097    0.097 <frozen posixpath>:412(realpath)
+        1    0.000    0.000    0.000    0.000 {method 'setimage' of 'ImagingDecoder' objects}
+        1    0.000    0.000    0.000    0.000 {built-in method posix.stat}
+        5    0.000    0.000    0.000    0.000 <frozen posixpath>:71(join)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_main.py:161(set_img_data_db)
+        1    0.000    0.000    0.093    0.093 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:3151(frombuffer)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:449(_getencoder)
+        1    0.000    0.000    0.060    0.060 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:3053(new)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_main.py:157(get_img_data_0)
+       23    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        2    0.000    0.000    0.000    0.000 {method 'flush' of '_io.BufferedRandom' objects}
+        1    0.000    0.000    0.000    0.000 {built-in method _abc._abc_subclasscheck}
+        1    0.000    0.000    0.000    0.000 <frozen posixpath>:389(normpath)
+        1    0.000    0.000    0.000    0.000 {method 'setimage' of 'ImagingEncoder' objects}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:885(load)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/queue.py:122(put)
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:3034(_check_size)
+        2    0.000    0.000    0.000    0.000 <frozen posixpath>:60(isabs)
+        1    0.000    0.000    0.000    0.000 {built-in method _abc._abc_instancecheck}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/queue.py:154(get)
+        1    0.000    0.000    0.000    0.000 <frozen genericpath>:121(_splitext)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:264(__enter__)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/JpegImagePlugin.py:646(<listcomp>)
+        1    0.000    0.000    0.000    0.000 {built-in method PIL._imaging.raw_decoder}
+        2    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:543(__init__)
+        1    0.000    0.000    0.000    0.000 <frozen posixpath>:397(abspath)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/queue.py:213(_put)
+        1    0.000    0.000    0.000    0.000 {method 'sort' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:637(_ensure_mutable)
+        7    0.000    0.000    0.000    0.000 {method 'startswith' of 'str' objects}
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:555(width)
+        1    0.000    0.000    0.000    0.000 <frozen posixpath>:117(splitext)
+        7    0.000    0.000    0.000    0.000 <frozen posixpath>:41(_get_sep)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/_util.py:9(is_path)
+        1    0.000    0.000    0.000    0.000 <frozen genericpath>:16(exists)
+       19    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mSQL.py:12(__init__)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/profilingService.py:26(__exit__)
+        2    0.000    0.000    0.000    0.000 {method 'pixel_access' of 'ImagingCore' objects}
+        8    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:563(size)
+       11    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:359(notify)
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:267(__exit__)
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+        2    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:279(_is_owned)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/queue.py:209(_qsize)
+        5    0.000    0.000    0.000    0.000 {method 'partition' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 <frozen abc>:117(__instancecheck__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/queue.py:217(_get)
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.round}
+       12    0.000    0.000    0.000    0.000 {built-in method posix.fspath}
+        1    0.000    0.000    0.000    0.000 {built-in method posix._path_normpath}
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.max}
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:559(height)
+        1    0.000    0.000    0.000    0.000 <frozen abc>:121(__subclasscheck__)
+        2    0.000    0.000    0.000    0.000 {method 'acquire' of '_thread.lock' objects}
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.hasattr}
+        2    0.000    0.000    0.000    0.000 {method 'rfind' of 'str' objects}
+        4    0.000    0.000    0.000    0.000 {method 'zfill' of 'str' objects}
+        5    0.000    0.000    0.000    0.000 {method 'endswith' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 <frozen _collections_abc>:409(__subclasshook__)
+        4    0.000    0.000    0.000    0.000 {built-in method _stat.S_ISLNK}
+        2    0.000    0.000    0.000    0.000 {method 'upper' of 'str' objects}
+        2    0.000    0.000    0.000    0.000 {method '__enter__' of '_thread.lock' objects}
+        3    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:567(mode)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/Image.py:348(preinit)
+        1    0.000    0.000    0.000    0.000 {method 'cleanup' of 'ImagingEncoder' objects}
+        2    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.lock' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 {method 'lower' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {method 'copy' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 {method 'fileno' of '_io.BufferedRandom' objects}
+        1    0.000    0.000    0.000    0.000 {method 'append' of 'collections.deque' objects}
+        1    0.000    0.000    0.000    0.000 {method 'pop' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/ImageFile.py:89(_tilesort)
+        1    0.000    0.000    0.000    0.000 {method 'popleft' of 'collections.deque' objects}
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mSQL.py:22(set_deviceID)
+        1    0.000    0.000    0.000    0.000 /usr/local/lib/python3.11/dist-packages/PIL/JpegImagePlugin.py:686(validate_qtables)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mSQL.py:26(set_imgID)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mSQL.py:34(set_imgTime)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mSQL.py:30(set_imgDate)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mSQL.py:38(set_lat)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mSQL.py:46(set_alt)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mSQL.py:50(set_numSat)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mSQL.py:42(set_lon)
+
+

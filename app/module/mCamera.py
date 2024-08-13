@@ -1,3 +1,4 @@
+import sys
 import time
 import os.path
 import numpy as np
@@ -7,6 +8,7 @@ from datetime import datetime, timezone
 from picamera2 import *
 from simple_pid import PID
 from module.db_main import dbSLI
+from module.profilingService import Profiler
 
 ##=====================================================
 tuning = Picamera2.load_tuning_file("imx477.json")
@@ -72,21 +74,7 @@ def run_picamera(stop, db: dbSLI):
 
             #state = capture_signal
             if db.get_camera_ctrl_signal():
-                print("capture now")
-                db.clear_camera_ctrl_signal()
-                t1 = time.perf_counter()
-                
-                # capture img
-                image_arr = camera.capture_array()
-                db.set_img_data(img_arr= image_arr, year= db.year_now, month = db.month_now, day = db.day_now,
-                                hour = db.hour_now, min = db.minute_now, sec = db.second_now, msec = int(db.msec_now / 10),
-                                lat =db.lat_now, lon = db.lon_now, alt = db.alt_now, numSat = db.numsat_now)
-
-                # input new img to show on GUI
-                db.imgGUI.set_lastImg(image_arr)
-                db.imgGUI.set_newImg(True)           
-                t2 = time.perf_counter()
-                print("Capture", "Brightness: ", db.get_last_img_grey_brightness(), "Gain: ", db.camPara.AnalogGain," time: ", t2-t1)#, "lux:", lux)#, " sensor temp:", sens_temp)
+                capture_image(db, camera)
                 
             if stop():
                 db.cameraState.set_state(5) # stop
@@ -95,6 +83,24 @@ def run_picamera(stop, db: dbSLI):
             time.sleep(0.01)
             
         camera.stop()
+
+def capture_image(db, camera):
+    with Profiler(function_call=capture_image.__name__):
+        print("capture now")
+        db.clear_camera_ctrl_signal()
+        t1 = time.perf_counter()
+
+        # capture img
+        image_arr = camera.capture_array()
+        db.set_img_data(img_arr= image_arr, year= db.year_now, month = db.month_now, day = db.day_now,
+                        hour = db.hour_now, min = db.minute_now, sec = db.second_now, msec = int(db.msec_now / 10),
+                        lat =db.lat_now, lon = db.lon_now, alt = db.alt_now, numSat = db.numsat_now)
+
+        # input new img to show on GUI
+        db.imgGUI.set_lastImg(image_arr)
+        db.imgGUI.set_newImg(True)           
+        t2 = time.perf_counter()
+        print("Capture", "Brightness: ", db.get_last_img_grey_brightness(), "Gain: ", db.camPara.AnalogGain," time: ", t2-t1)#, "lux:", lux)#, " sensor temp:", sens_temp)
 
 ##=====================================================
 def convert_array_to_file(stop, db: dbSLI):
@@ -105,7 +111,7 @@ def convert_array_to_file(stop, db: dbSLI):
     while True:
         if db.year_now != 0:
             dirname1 = str(db.year_now).zfill(4) + str(db.month_now).zfill(2) + str(db.day_now).zfill(2) 
-            symlink_path = os.path.join(os.path.dirname(__file__),"../storeImages")
+            symlink_path = os.path.join(os.getcwd(),"storeImages")
             path = os.path.join(symlink_path, dirname1)
 
             if not os.path.isdir(path):
@@ -114,24 +120,28 @@ def convert_array_to_file(stop, db: dbSLI):
                 print ("my path dir ", path)
 
         if not db.check_img_data_empty():# list_image_array.empty():
-            img_data = db.get_img_data_0()
-            img = img_data.img_arr
-
-            # image file name
-            dirname2 = str(img_data.img_hour).zfill(2) + str(img_data.img_min).zfill(2) + str(img_data.img_sec).zfill(2) + str(img_data.img_msec).zfill(2)
-            filename = dirname1 + dirname2
-
-            # creating image object of above array
-            data = im.fromarray(img)
-            data.save(path + "/" + filename + ".jpeg")
-
-            # create data for img DB
-            db.set_img_data_db(db.CPU_serial, filename, dirname1, dirname2, img_data.img_lat, img_data.img_lon, img_data.img_alt, img_data.img_numSat)
-
+            saveToFileStoreToDb(db, dirname1, path)
         if stop():
             break
         
         time.sleep(0.1)
+
+def saveToFileStoreToDb(db, dirname1, path):
+    with Profiler(function_call=saveToFileStoreToDb.__name__):
+        img_data = db.get_img_data_0()
+        img = img_data.img_arr
+
+        # image file name
+        dirname2 = str(img_data.img_hour).zfill(2) + str(img_data.img_min).zfill(2) + str(img_data.img_sec).zfill(2) + str(img_data.img_msec).zfill(2)
+        filename = dirname1 + dirname2
+
+        # creating image object of above array
+        data = im.fromarray(img)
+        data.save(path + "/" + filename + ".jpeg")
+
+        # create data for img DB
+        db.set_img_data_db(db.CPU_serial, filename, dirname1, dirname2, img_data.img_lat, img_data.img_lon, img_data.img_alt, img_data.img_numSat)
+
 
 
 ##=====================================================

@@ -1,27 +1,24 @@
+import os
 import sys
 import time
-import signal
 
 # =============================================
 # For debugging ...
 # =============================================
-if len(sys.argv) > 1:
+if '--debug' in sys.argv:
     import debugpy
-
-    if sys.argv[1] == "debug":
-        debugpy.listen(("0.0.0.0", 5678))
-        print("Waiting for debugger attach...")
-        debugpy.wait_for_client()
-        debugpy.breakpoint()
-        print("Debugger is attached!")
-    
-    def signal_handler(sig, frame):
-        print('Signal received, closing app...')
-        sys.exit(0)
-
-    signal.signal(signal.SIGINT, signal_handler)
+    debugpy.listen(("0.0.0.0", 5678))
+    print("Waiting for debugger attach...")
+    debugpy.wait_for_client()
+    debugpy.breakpoint()
+    print("Debugger is attached!")
 
 # =============================================
+try:
+    os.chdir(os.path.dirname(__file__))
+    print(f"Current working directory changed to {os.getcwd()}")
+except OSError as e:
+    print(f"Error: {e}")
 
 from threading import Thread
 from enum import Enum

@@ -1,0 +1,57 @@
+         62 function calls in 0.286 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        3    0.286    0.095    0.286    0.095 {method 'acquire' of '_thread.lock' objects}
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_main.py:125(set_img_data)
+        1    0.000    0.000    0.286    0.286 /usr/lib/python3.11/concurrent/futures/_base.py:428(result)
+        1    0.000    0.000    0.286    0.286 /usr/lib/python3.11/threading.py:288(wait)
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.print}
+        1    0.000    0.000    0.286    0.286 /home/hungnp/.local/lib/python3.11/site-packages/picamera2/picamera2.py:1299(dispatch_functions)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/queue.py:213(_put)
+        1    0.000    0.000    0.286    0.286 /home/hungnp/.local/lib/python3.11/site-packages/picamera2/picamera2.py:1562(capture_array)
+        1    0.000    0.000    0.000    0.000 /home/hungnp/.local/lib/python3.11/site-packages/picamera2/job.py:23(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/queue.py:122(put)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:236(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/concurrent/futures/_base.py:328(__init__)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:264(__enter__)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:5(__init__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/concurrent/futures/_base.py:497(set_running_or_notify_cancel)
+        1    0.000    0.000    0.286    0.286 /home/hungnp/.local/lib/python3.11/site-packages/picamera2/job.py:73(get_result)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/profilingService.py:26(__exit__)
+        3    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:267(__exit__)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:90(RLock)
+        1    0.000    0.000    0.000    0.000 {method '_acquire_restore' of '_thread.RLock' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:359(notify)
+        2    0.000    0.000    0.000    0.000 {method '__enter__' of '_thread.RLock' objects}
+        1    0.000    0.000    0.000    0.000 {method '_release_save' of '_thread.RLock' objects}
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_main.py:217(clear_camera_ctrl_signal)
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/threading.py:279(_is_owned)
+        2    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.RLock' objects}
+        1    0.000    0.000    0.000    0.000 {method '__enter__' of '_thread.lock' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        2    0.000    0.000    0.000    0.000 {built-in method time.perf_counter}
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mGUI.py:51(set_newImg)
+        1    0.000    0.000    0.000    0.000 {built-in method _thread.allocate_lock}
+        2    0.000    0.000    0.000    0.000 {method 'append' of 'collections.deque' objects}
+        1    0.000    0.000    0.000    0.000 /usr/lib/python3.11/concurrent/futures/_base.py:398(__get_result)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/mGUI.py:47(set_lastImg)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_main.py:231(get_last_img_grey_brightness)
+        1    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}
+        2    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.lock' objects}
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:40(set_img_year)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:28(set_img_arr)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:64(set_img_msec)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:72(set_img_lon)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:52(set_img_hour)
+        1    0.000    0.000    0.000    0.000 {method '_is_owned' of '_thread.RLock' objects}
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:68(set_img_lat)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:80(set_img_numSat)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:76(set_img_alt)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:60(set_img_sec)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:44(set_img_month)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:48(set_img_day)
+        1    0.000    0.000    0.000    0.000 /mnt/app/module/db_img_metadata.py:56(set_img_min)
+
+

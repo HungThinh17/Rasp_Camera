@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# this code is nolonger rundable after refactor...
+# keep this for reference purpose only !
+
 # =============================================
 # For debugging ...
 # =============================================
