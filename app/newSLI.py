@@ -28,13 +28,15 @@ from module.db_main import dbSLI
 # from module.mCamera import auto_gain_PID, convert_array_to_file, run_picamera
 from module.cameraService import CameraController
 from module.mCommon import sysTimer
-from module.mGUI import mainGUI
+# from module.mGUI import mainGUI
+from module.guiService import GUIController, start_gui
 from module.mGps import run_GPS
 from module.mSQL import run_add_data
 
 # Global list to hold thread objects
 gThreads = []
 camera_service: CameraController = None
+gui_service: GUIController = None
 
 class SystemState(Enum):
     INIT = 1
@@ -47,8 +49,11 @@ class SystemState(Enum):
 def initialize_system(db_SLI):
     db_SLI.sysState.set_state(SystemState.INIT)  # init
 
-    global camera_service # Init CameraController
+    global camera_service # Init Camera Controller
     camera_service = CameraController(db_SLI)
+
+    global gui_service # Init Graphic UI Controller
+    gui_service = GUIController(db_SLI)
 
     print("Hello SLI Image !")
 
@@ -80,7 +85,7 @@ def start_threads(db_SLI, stop_event):
     threads.append(data_thread)
 
     # Thread: GUI display
-    gui_thread = Thread(target=mainGUI, args=(db_SLI,))
+    gui_thread = Thread(target=start_gui, args=(gui_service, stop_event))
     threads.append(gui_thread)
 
     # Start all threads

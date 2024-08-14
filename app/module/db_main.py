@@ -6,7 +6,7 @@ from module.db_img_metadata import dbImgMetadata
 from module.mCommon import cFP
 from module.db_device_status import dbDeviceState
 from module.mSQL import m_SQL, dbSQL
-from module.mGUI import dbGUI
+from module.guiService import dbGUI
 
 def getserial():
     # Extract serial from cpuinfo file
@@ -146,12 +146,6 @@ class dbSLI:
         return
     
     def check_img_data_empty(self):
-        """
-        if len(self.img_data) > 0:
-            return False
-        else:
-            return True
-        """
         return self.img_data.empty()
             
     def get_img_data_0(self):

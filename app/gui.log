@@ -1,0 +1,44 @@
+2024-08-14 12:36:00,505 [INFO] GUI initialized
+2024-08-14 12:36:00,580 [INFO] Starting image conversion and saving...
+2024-08-14 12:36:00,586 [INFO] Initialization successful.
+2024-08-14 12:36:00,589 [INFO] Camera now open.
+2024-08-14 12:36:00,608 [INFO] Camera configuration has been adjusted!
+2024-08-14 12:36:00,616 [INFO] Configuration successful!
+2024-08-14 14:14:03,013 [INFO] Camera started
+2024-08-14 14:14:03,022 [INFO] Camera initialized and ready for capture.
+2024-08-14 14:14:19,380 [INFO] GUI initialized
+2024-08-14 14:14:19,457 [INFO] Starting image conversion and saving...
+2024-08-14 14:14:19,462 [INFO] Initialization successful.
+2024-08-14 14:14:19,469 [INFO] Camera now open.
+2024-08-14 14:14:19,489 [INFO] Camera configuration has been adjusted!
+2024-08-14 14:14:19,742 [INFO] Configuration successful!
+2024-08-14 14:14:19,751 [INFO] Window created with title: Mini SLI and geometry: 1024x634
+2024-08-14 14:14:20,332 [INFO] Camera started
+2024-08-14 14:14:20,335 [INFO] Camera initialized and ready for capture.
+2024-08-14 14:14:20,531 [INFO] GUIPanel created with image: /mnt/app/module/../Digime.jpeg
+2024-08-14 14:14:20,546 [INFO] GUILabel created with text: Initializing
+2024-08-14 14:14:20,557 [INFO] GUILabel created with text: Time: 
+Lat: 
+Lon: 
+Alt: 
+Satellite: 
+Speed: 
+2024-08-14 14:14:20,569 [INFO] GUIButton created with text: Exit
+2024-08-14 14:14:20,574 [INFO] GUIButton created with text: Capture
+2024-08-14 14:14:20,579 [INFO] GUIButton created with text: Idling
+2024-08-14 14:14:21,339 [INFO] Waiting for capture signal...
+2024-08-14 14:14:30,660 [INFO] Capture button clicked, setting capture single mode
+2024-08-14 14:14:30,671 [INFO] Capturing image...
+2024-08-14 14:14:30,723 [INFO] Image captured. Brightness: 0, Gain: 1, Time: 0.016048 seconds
+2024-08-14 14:14:34,733 [INFO] Capture button clicked, setting capture single mode
+2024-08-14 14:14:34,747 [INFO] Capturing image...
+2024-08-14 14:14:34,779 [INFO] Image captured. Brightness: 0, Gain: 1, Time: 0.015644 seconds
+2024-08-14 14:14:35,988 [INFO] Capture button clicked, setting capture single mode
+2024-08-14 14:14:36,011 [INFO] Capturing image...
+2024-08-14 14:14:36,167 [INFO] Image captured. Brightness: 0, Gain: 1, Time: 0.005686 seconds
+2024-08-14 14:14:37,031 [INFO] Capture button clicked, setting capture single mode
+2024-08-14 14:14:37,048 [INFO] Capturing image...
+2024-08-14 14:14:37,164 [INFO] Image captured. Brightness: 0, Gain: 1, Time: 0.004085 seconds
+2024-08-14 14:14:38,149 [INFO] Capture button clicked, setting capture single mode
+2024-08-14 14:14:38,163 [INFO] Capturing image...
+2024-08-14 14:14:38,203 [INFO] Image captured. Brightness: 0, Gain: 1, Time: 0.004197 seconds
