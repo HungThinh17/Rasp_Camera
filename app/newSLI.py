@@ -1,3 +1,4 @@
+from functools import partial
 import os
 import sys
 import time
@@ -24,7 +25,8 @@ from threading import Thread
 from enum import Enum
 
 from module.db_main import dbSLI
-from module.mCamera import auto_gain_PID, convert_array_to_file, run_picamera
+# from module.mCamera import auto_gain_PID, convert_array_to_file, run_picamera
+from module.cameraService import CameraController
 from module.mCommon import sysTimer
 from module.mGUI import mainGUI
 from module.mGps import run_GPS
@@ -32,6 +34,7 @@ from module.mSQL import run_add_data
 
 # Global list to hold thread objects
 gThreads = []
+camera_service: CameraController = None
 
 class SystemState(Enum):
     INIT = 1
@@ -43,6 +46,10 @@ class SystemState(Enum):
 
 def initialize_system(db_SLI):
     db_SLI.sysState.set_state(SystemState.INIT)  # init
+
+    global camera_service # Init CameraController
+    camera_service = CameraController(db_SLI)
+
     print("Hello SLI Image !")
 
 def start_threads(db_SLI, stop_event):
@@ -53,15 +60,15 @@ def start_threads(db_SLI, stop_event):
     threads.append(timer_thread)
 
     # Thread: capture camera
-    camera_thread = Thread(target=run_picamera, args=(stop_event, db_SLI))
+    camera_thread = Thread(target=partial(CameraController.run, camera_service, stop_event))
     threads.append(camera_thread)
 
     # Thread: save image array to file
-    file_thread = Thread(target=convert_array_to_file, args=(stop_event, db_SLI))
+    file_thread = Thread(target=partial(CameraController.convert_array_to_file, camera_service, stop_event))
     threads.append(file_thread)
 
     # Thread: PID control analog gain
-    gain_thread = Thread(target=auto_gain_PID, args=(stop_event, 110, db_SLI))
+    gain_thread = Thread(target=partial(CameraController.auto_gain_adjustment, camera_service, stop_event))
     threads.append(gain_thread)
 
     # Thread: run GPS

@@ -28,7 +28,7 @@
       "type": "shell",
       "command": "make",
       "args": [
-        "cleanDebug"
+        "clean"
       ],
       "options": {
         "cwd": "${workspaceFolder}",

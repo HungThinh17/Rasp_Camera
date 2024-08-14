@@ -30,6 +30,6 @@ manualProfiling:
 	ssh $(USER)@$(ADDRESS) "DISPLAY=:10 python $(MOUNTPOINT)/$(APP) --profiling" || true
 
 clean:
-	ssh $(USER)@$(ADDRESS) "sudo pgrep -f newSLI.py | xargs kill" || true
+	ssh $(USER)@$(ADDRESS) "sudo pgrep -f $(APP) | xargs kill" || true
 	@echo Done! && exit
 

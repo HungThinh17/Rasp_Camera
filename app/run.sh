@@ -1,3 +1,5 @@
-echo Hi there...
+#!/bin/bash
+
+@echo Hi there...
 sudo chmod -R 777 /dev/serial0
-exec python ./SLI.py
+sudo python ./newSLI.py
