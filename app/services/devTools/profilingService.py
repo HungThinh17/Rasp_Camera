@@ -10,7 +10,7 @@ class Profiler:
         self.enabled = '--profiling' in sys.argv
         self.profiler = None
         self.stream = io.StringIO()
-        self.log_dir = os.path.join(os.getcwd(), 'profilings')
+        self.log_dir = os.path.join(os.getcwd(), 'archives/profilings')
         self.log_file_path = os.path.join(self.log_dir, f"{self.function_call}.log")
         self._setup_log_dir()
 

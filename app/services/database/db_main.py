@@ -1,12 +1,12 @@
 import queue
 import time
-from module.db_cam_parameter import dbCamPara
-from module.mTimer import db_timer
-from module.db_img_metadata import dbImgMetadata
-from module.mCommon import cFP
-from module.db_device_status import dbDeviceState
-from module.mSQL import m_SQL, dbSQL
-from module.guiService import dbGUI
+from services.database.db_cam_parameter import dbCamPara
+from services.common.mTimer import db_timer
+from services.database.db_img_metadata import dbImgMetadata
+from services.common.mCommon import cFP
+from services.database.db_device_status import dbDeviceState
+from services.database.mSQL import m_SQL, dbSQL
+from services.gui.guiService import dbGUI
 
 def getserial():
     # Extract serial from cpuinfo file

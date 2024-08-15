@@ -24,14 +24,13 @@ except OSError as e:
 from threading import Thread
 from enum import Enum
 
-from module.db_main import dbSLI
-# from module.mCamera import auto_gain_PID, convert_array_to_file, run_picamera
-from module.cameraService import CameraController
-from module.mCommon import sysTimer
-# from module.mGUI import mainGUI
-from module.guiService import GUIController, start_gui
-from module.mGps import run_GPS
-from module.mSQL import run_add_data
+from services.database.db_main import dbSLI
+from services.common.mCommon import sysTimer
+from services.common.mGps import run_GPS
+from services.database.mSQL import run_add_data
+
+from services.camera.cameraService import CameraController
+from services.gui.guiService import GUIController, start_gui
 
 # Global list to hold thread objects
 gThreads = []

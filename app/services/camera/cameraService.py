@@ -8,8 +8,8 @@ from datetime import datetime, timezone
 from PIL import Image
 from picamera2 import Picamera2
 from simple_pid import PID
-from module.db_main import dbSLI
-from module.profilingService import Profiler
+from services.database.db_main import dbSLI
+from services.devTools.profilingService import Profiler
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

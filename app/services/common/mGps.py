@@ -8,7 +8,7 @@
 import time
 import serial, time, pynmea2
 
-from module.db_main import dbSLI
+from services.database.db_main import dbSLI
 
 def run_GPS(stop, db: dbSLI):
     print("run t4")

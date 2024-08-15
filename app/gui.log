@@ -42,3 +42,65 @@ Speed:
 2024-08-14 14:14:38,149 [INFO] Capture button clicked, setting capture single mode
 2024-08-14 14:14:38,163 [INFO] Capturing image...
 2024-08-14 14:14:38,203 [INFO] Image captured. Brightness: 0, Gain: 1, Time: 0.004197 seconds
+2024-08-14 14:22:10,544 [INFO] GUI initialized
+2024-08-14 14:22:10,621 [INFO] Starting image conversion and saving...
+2024-08-14 14:22:10,626 [INFO] Initialization successful.
+2024-08-14 14:22:10,638 [INFO] Camera now open.
+2024-08-14 14:22:10,859 [INFO] Camera configuration has been adjusted!
+2024-08-14 14:22:10,865 [INFO] Window created with title: Mini SLI and geometry: 1024x634
+2024-08-14 14:22:10,868 [INFO] Configuration successful!
+2024-08-14 14:22:11,435 [INFO] Camera started
+2024-08-14 14:22:11,458 [INFO] Camera initialized and ready for capture.
+2024-08-14 14:22:11,609 [INFO] GUIPanel created with image: /mnt/app/module/../Digime.jpeg
+2024-08-14 14:22:11,619 [INFO] GUILabel created with text: Initializing
+2024-08-14 14:22:11,623 [INFO] GUILabel created with text: Time: 
+Lat: 
+Lon: 
+Alt: 
+Satellite: 
+Speed: 
+2024-08-14 14:22:11,628 [INFO] GUIButton created with text: Exit
+2024-08-14 14:22:11,632 [INFO] GUIButton created with text: Capture
+2024-08-14 14:22:11,639 [INFO] GUIButton created with text: Idling
+2024-08-14 14:22:12,464 [INFO] Waiting for capture signal...
+2024-08-14 14:22:43,228 [INFO] Capture button clicked, setting capture single mode
+2024-08-14 14:22:43,248 [INFO] Capturing image...
+2024-08-14 14:22:43,276 [INFO] Image captured. Brightness: 0, Gain: 1, Time: 0.015668 seconds
+2024-08-14 14:23:02,015 [INFO] Exit button clicked, closing the application
+2024-08-15 03:32:16,222 [INFO] GUI initialized
+2024-08-15 03:32:16,312 [INFO] Starting image conversion and saving...
+2024-08-15 03:32:16,314 [INFO] Initialization successful.
+2024-08-15 03:32:16,320 [INFO] Camera now open.
+2024-08-15 03:32:16,339 [INFO] Camera configuration has been adjusted!
+2024-08-15 03:32:16,342 [INFO] Configuration successful!
+2024-08-15 03:32:16,646 [INFO] Window created with title: Mini SLI and geometry: 1024x634
+2024-08-15 03:32:17,198 [INFO] Camera started
+2024-08-15 03:32:17,199 [INFO] Camera initialized and ready for capture.
+2024-08-15 03:32:46,314 [INFO] Waiting for capture signal...
+2024-08-15 03:34:22,993 [INFO] GUI initialized
+2024-08-15 03:34:23,151 [INFO] Starting image conversion and saving...
+2024-08-15 03:34:23,159 [INFO] Initialization successful.
+2024-08-15 03:34:23,174 [INFO] Camera now open.
+2024-08-15 03:34:23,380 [INFO] Window created with title: Mini SLI and geometry: 1024x634
+2024-08-15 03:34:23,392 [INFO] Camera configuration has been adjusted!
+2024-08-15 03:34:23,401 [INFO] Configuration successful!
+2024-08-15 03:34:23,979 [INFO] Camera started
+2024-08-15 03:34:23,994 [INFO] Camera initialized and ready for capture.
+2024-08-15 03:34:24,202 [INFO] GUIPanel created with image: /mnt/app/Digime.jpeg
+2024-08-15 03:34:24,260 [INFO] GUILabel created with text: Initializing
+2024-08-15 03:34:24,265 [INFO] GUILabel created with text: Time: 
+Lat: 
+Lon: 
+Alt: 
+Satellite: 
+Speed: 
+2024-08-15 03:34:24,270 [INFO] GUIButton created with text: Exit
+2024-08-15 03:34:24,275 [INFO] GUIButton created with text: Capture
+2024-08-15 03:34:24,287 [INFO] GUIButton created with text: Idling
+2024-08-15 03:34:24,998 [INFO] Waiting for capture signal...
+2024-08-15 03:34:28,871 [INFO] Capture button clicked, setting capture single mode
+2024-08-15 03:34:28,892 [INFO] Capturing image...
+2024-08-15 03:34:28,909 [INFO] Image captured. Brightness: 0, Gain: 1, Time: 0.006981 seconds
+2024-08-15 03:34:53,177 [INFO] Capture button clicked, setting capture single mode
+2024-08-15 03:34:53,238 [INFO] Capturing image...
+2024-08-15 03:34:53,256 [INFO] Image captured. Brightness: 0, Gain: 1, Time: 0.006265 seconds

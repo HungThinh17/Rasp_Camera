@@ -28,14 +28,14 @@ import os.path
 
 
 from threading import Thread
-from module.mCamera import run_picamera, convert_array_to_file, auto_gain_PID
-from module.mGps import run_GPS
-from module.mKeyBoardCtrl import kbCtrl
-from module.mCommon import sysTimer
+from services.mCamera import run_picamera, convert_array_to_file, auto_gain_PID
+from services.common.mGps import run_GPS
+from services.common.mKeyBoardCtrl import kbCtrl
+from services.common.mCommon import sysTimer
 # from pynput.keyboard import Key
-from module.mSQL import run_add_data
-from module.db_main import dbSLI
-from module.mGUI import display_GUI, mainGUI
+from services.database.mSQL import run_add_data
+from services.database.db_main import dbSLI
+from services.mGUI import display_GUI, mainGUI
 
 ##=====================================================
 # define a main function

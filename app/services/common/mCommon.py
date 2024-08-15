@@ -4,7 +4,7 @@ import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from module.db_main import dbSLI
+    from services.database.db_main import dbSLI
 
 class cFP:
     def __init__(self):

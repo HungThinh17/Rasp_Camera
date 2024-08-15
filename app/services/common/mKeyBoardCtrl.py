@@ -1,6 +1,6 @@
 import keyboard
 import time
-from module.db_main import dbSLI
+from services.database.db_main import dbSLI
 
 def kbCtrl(stop, db: dbSLI):
     while True:

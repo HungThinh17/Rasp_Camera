@@ -1,16 +1,15 @@
 import os
 import time
 import tkinter as tk
-from PIL import Image, ImageTk
-from typing import Optional
 import logging
+from PIL import Image, ImageTk
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler("gui.log"),
+        logging.FileHandler(f'{os.getcwd()}/archives/logs/gui.log'),
         logging.StreamHandler()
     ]
 )
@@ -135,7 +134,7 @@ class GUIController:
         logging.info(f"Window created with title: {GUIConfig.WINDOW_TITLE} and geometry: {GUIConfig.WINDOW_WIDTH}x{GUIConfig.WINDOW_HEIGHT}")
 
         # Create the background panel
-        image_path = os.path.join(os.path.dirname(__file__), "../Digime.jpeg")
+        image_path = os.path.join(os.getcwd(), "Digime.jpeg")
         self.bg_panel = GUIPanel(self.parent, image_path, width=GUIConfig.WINDOW_WIDTH, height=GUIConfig.WINDOW_HEIGHT)
         self.bg_panel.place(x=0, y=0)
 
@@ -147,9 +146,21 @@ class GUIController:
         self.gui_widget.add_label("lbInfo", "Time: \nLat: \nLon: \nAlt: \nSatellite: \nSpeed: ", anchor="w", justify=tk.LEFT, bg="black", fg="lime", x=0, y=20)
 
         # Add buttons
-        self.gui_widget.add_button("btExit", "Exit", self.handle_exit_button_click, bg="red", fg="white", height=1, width=3, x=GUIConfig.WINDOW_WIDTH - 50, y=0)
-        self.gui_widget.add_button("btCapture", "Capture", self.handle_capture_button_click, bg="lime", fg="black", height=3, width=10, x=GUIConfig.WINDOW_WIDTH - 130, y=GUIConfig.WINDOW_HEIGHT - 65)
-        self.gui_widget.add_button("btIdling", "Idling", self.handle_idling_button_click, bg="lime", fg="black", height=3, width=10, x=0, y=GUIConfig.WINDOW_HEIGHT - 65)
+        self.gui_widget.add_button(
+            "btExit", "Exit", self.handle_exit_button_click, \
+            bg="red", fg="white", height=1, width=3, \
+            x=GUIConfig.WINDOW_WIDTH - 50, y=0
+        )
+        self.gui_widget.add_button(
+            "btCapture", "Capture", self.handle_capture_button_click, \
+            bg="lime", fg="black", height=3, width=10, \
+            x=GUIConfig.WINDOW_WIDTH - 130, y=GUIConfig.WINDOW_HEIGHT - 65
+        )
+        self.gui_widget.add_button(
+            "btIdling", "Idling", self.handle_idling_button_click, \
+            bg="lime", fg="black", height=3, width=10, \
+            x=0, y=GUIConfig.WINDOW_HEIGHT - 65
+        )
         # self.update_gui()
 
     def handle_bg_image_button_click(self):
