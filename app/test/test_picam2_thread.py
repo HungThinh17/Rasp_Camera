@@ -95,7 +95,7 @@ def run_picamera(stop):
                 #sens_temp = metadata["SensorTemperature"]
                 print("ID:", picture_id, "Brightness: ", "time: ", t2-t1)#, "lux:", lux)#, " sensor temp:", sens_temp)
             
-            if stop():
+            if stop:
                 break
             
             time.sleep(0.001)
@@ -125,7 +125,7 @@ def convert_array_to_file(stop):
             # saving the final output a file
             data.save(path + f"/{id}.jpeg")
         
-        if stop():
+        if stop:
             break
         
         time.sleep(0.05)

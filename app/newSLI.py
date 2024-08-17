@@ -1,4 +1,3 @@
-from functools import partial
 import os
 import sys
 import time
@@ -13,178 +12,271 @@ if '--debug' in sys.argv:
     debugpy.wait_for_client()
     debugpy.breakpoint()
     print("Debugger is attached!")
+# =============================================
 
+# =============================================
+# For changing cwd ... 
 # =============================================
 try:
     os.chdir(os.path.dirname(__file__))
     print(f"Current working directory changed to {os.getcwd()}")
 except OSError as e:
     print(f"Error: {e}")
+# =============================================
 
-from threading import Thread
 from enum import Enum
+from threading import Thread
+from multiprocessing import Process, Manager, Queue
 
-from services.database.db_main import dbSLI
-from services.common.mCommon import sysTimer
-from services.common.mGps import run_GPS
-from services.database.mSQL import run_add_data
+from services.common.system_store import SystemStore
+from services.camera.camera_store import CameraStore
+from services.database.my_sql_database import MySliDatabase
+from services.common.shared_keys import SharedKey
+from services.common.system_status import SystemState
 
-from services.camera.cameraService import CameraController
-from services.gui.guiService import GUIController, start_gui
+from services.timer.timer_service import timer_service_worker
+from services.gps.gps_service import gps_service_worker
+from services.database.database_service import database_service_worker
+from services.gui.guiService import gui_service_worker
+from services.camera.cameraService import camera_controller_worker
+from services.image.imageService import image_processor_worker
 
-# Global list to hold thread objects
-gThreads = []
-camera_service: CameraController = None
-gui_service: GUIController = None
+class System:
 
-class SystemState(Enum):
-    INIT = 1
-    READY = 2
-    ERROR = 3
-    RUNNING = 4
-    IDLING_STOP = 7
-    PAUSED = 6
+    def __init__(self):
+        self.threads = []
+        self.processes = {}
 
-def initialize_system(db_SLI):
-    db_SLI.sysState.set_state(SystemState.INIT)  # init
+        # Create a shared dictionary to store the database connection
+        manager = Manager()
+        self.shared_obj = manager.dict()
+        self.shared_data_queue = Queue()
+        self.system_store: SystemStore = None
+        self.sli_database: MySliDatabase = None
+        self.stop_event = False
 
-    global camera_service # Init Camera Controller
-    camera_service = CameraController(db_SLI)
+    def initialize_system(self):
+        """
+        Initialize the system components (camera, image processor, and GUI controller).
+        """
+        self.shared_obj[SharedKey.SYSTEM_STORE] = SystemStore()
+        self.shared_obj[SharedKey.STOP_EVENT] = self.stop_event
+        self.system_store = self.shared_obj[SharedKey.SYSTEM_STORE]
+        self.sli_database = MySliDatabase()
 
-    global gui_service # Init Graphic UI Controller
-    gui_service = GUIController(db_SLI)
+        self.system_store.set_cpu_serial(self.getserial())
+        self.system_store.sysState.set_state(SystemState.INIT)  # init
+        print("Hello SLI Image !")
 
-    print("Hello SLI Image !")
+    def set_stop_event(self):
+        self.shared_obj[SharedKey.STOP_EVENT] = True
+        self.stop_event = True
 
-def start_threads(db_SLI, stop_event):
-    threads = []
+    def camera_process_worker(self):
+        """
+        Create and start threads for camera-related tasks (gain adjustment, camera capture, and image conversion).
+        """
+        threads = []
+        camera_store = CameraStore()
 
-    # Thread: system timer
-    timer_thread = Thread(target=sysTimer, args=(stop_event, db_SLI))
-    threads.append(timer_thread)
+        # capture camera
+        camera_thread = Thread(name='Camera Capture', target=camera_controller_worker, args=(self.shared_obj, camera_store))
+        threads.append(camera_thread)
 
-    # Thread: capture camera
-    camera_thread = Thread(target=partial(CameraController.run, camera_service, stop_event))
-    threads.append(camera_thread)
+        # save image array to file
+        image_thread = Thread(name='Convert Image', target=image_processor_worker, args=(self.shared_obj, camera_store, self.shared_data_queue))
+        threads.append(image_thread)
 
-    # Thread: save image array to file
-    file_thread = Thread(target=partial(CameraController.convert_array_to_file, camera_service, stop_event))
-    threads.append(file_thread)
+        # Start all threads
+        for thread in threads:
+            thread.start()
 
-    # Thread: PID control analog gain
-    gain_thread = Thread(target=partial(CameraController.auto_gain_adjustment, camera_service, stop_event))
-    threads.append(gain_thread)
+    def start_app(self):
+        """
+        Start the application by creating and starting threads and processes for various tasks.
+        """
+        self.threads = []
+        self.processes = {}
 
-    # Thread: run GPS
-    gps_thread = Thread(target=run_GPS, args=(stop_event, db_SLI))
-    threads.append(gps_thread)
+        # Child Processes Initialize
+        # =========================
 
-    # Thread: input database
-    data_thread = Thread(target=run_add_data, args=(stop_event, db_SLI))
-    threads.append(data_thread)
+        # Process: Camera worker process initialize
+        camera_process = Process(name='Camera Services', target=self.camera_process_worker)
+        self.processes['image_process'] = camera_process
 
-    # Thread: GUI display
-    gui_thread = Thread(target=start_gui, args=(gui_service, stop_event))
-    threads.append(gui_thread)
+        # Threading Initialize
+        # =========================
 
-    # Start all threads
-    for thread in threads:
-        thread.start()
+        # Thread: system timer
+        timer_thread = Thread(name='Timer Service', target=timer_service_worker, args=(self.system_store, self.stop_event,))
+        self.threads.append(timer_thread)
 
-    return threads
+        # Thread: run GPS
+        gps_thread = Thread(name='GPS Service', target=gps_service_worker, args=(self.system_store, self.stop_event,))
+        self.threads.append(gps_thread)
 
-def control_program_flow(db_SLI):
-    while True:
-        system_state = handle_system_state(db_SLI)
-        handle_camera_state(db_SLI, system_state)
-        handle_user_input(db_SLI, system_state)
-        handle_idling(db_SLI, system_state)
-        time.sleep(0.02)
+        # Thread: GUI display
+        gui_thread = Thread(name='GUI Service', target=gui_service_worker, args=(self.system_store, self.stop_event,))
+        self.threads.append(gui_thread)
 
-def handle_system_state(db_SLI):
-    cam_state = db_SLI.cameraState.get_state()
-    gps_state = db_SLI.GpsState.get_state()
-    sys_state = db_SLI.sysState.get_state()
+        # Thread: input database
+        data_thread = Thread(name='Database Service', target=database_service_worker, args=(self.system_store, self.stop_event, self.shared_data_queue, self.sli_database))
+        self.threads.append(data_thread)
 
-    if cam_state == SystemState.RUNNING and gps_state == SystemState.RUNNING and \
-       sys_state != SystemState.RUNNING and sys_state != SystemState.IDLING_STOP and \
-       sys_state != SystemState.PAUSED:
-        db_SLI.sysState.set_state(SystemState.READY)  # system ready, waiting for run command
+        # Start all processes and threads
+        # =========================
 
-    if cam_state == SystemState.ERROR or gps_state == SystemState.ERROR:
-        db_SLI.sysState.set_state(SystemState.ERROR)  # system error, at least one module error
+        # Start all processes
+        for process in self.processes.values():
+            process.start()
 
-    return sys_state
+        # Start all threads
+        for thread in self.threads:
+            thread.start()
 
-def handle_camera_state(db_SLI, system_state):
-    if system_state == SystemState.RUNNING:
-        db_SLI.fpAutoCapture.FP(db_SLI.p800.Output)
-        if db_SLI.fpAutoCapture.output and db_SLI.capture_interval_mode:
-            db_SLI.set_camera_ctrl_signal()
-            print("Auto capture interval")
 
-def handle_user_input(db_SLI, system_state):
-    if (db_SLI.kb == "r" or db_SLI.imgGUI.btn_GUI_capture_auto) and \
-       (system_state == SystemState.READY or system_state == SystemState.PAUSED):
-        transition_to_run_state(db_SLI)
-    elif (db_SLI.kb == "r" or db_SLI.imgGUI.btn_GUI_capture_auto) and \
-         (system_state == SystemState.RUNNING or system_state == SystemState.IDLING_STOP):
-        transition_to_pause_state(db_SLI)
-    elif db_SLI.kb == "a" or db_SLI.imgGUI.btn_GUI_capture_single:
-        db_SLI.set_camera_ctrl_signal()
-        db_SLI.clear_kbCtrl()
-        db_SLI.imgGUI.set_btn_GUI_capture_single(False)
-    elif db_SLI.kb == "c" or db_SLI.imgGUI.btn_GUI_exit:
-        stop_threads(db_SLI, gThreads)
+    def handle_system_state(self):
+        """
+        Handle the system state based on the camera and GPS states.
+        """
+        cam_state = self.system_store.cameraState.get_state()
+        gps_state = self.system_store.GpsState.get_state()
+        sys_state = self.system_store.sysState.get_state()
 
-def transition_to_run_state(db_SLI):
-    db_SLI.sysState.set_state(SystemState.RUNNING)  # system run
-    db_SLI.clear_kbCtrl()
-    db_SLI.imgGUI.set_btn_GUI_capture_auto(False)
-    print("system run transition")
+        if cam_state == SystemState.RUNNING and gps_state == SystemState.RUNNING and \
+           sys_state != SystemState.RUNNING and sys_state != SystemState.IDLING_STOP and \
+           sys_state != SystemState.PAUSED:
+            self.system_store.sysState.set_state(SystemState.READY)  # system ready, waiting for run command
 
-def transition_to_pause_state(db_SLI):
-    db_SLI.sysState.set_state(SystemState.PAUSED)  # system pause
-    db_SLI.clear_kbCtrl()
-    db_SLI.imgGUI.set_btn_GUI_capture_auto(False)
-    print("system pause")
+        if cam_state == SystemState.ERROR or gps_state == SystemState.ERROR:
+            self.system_store.sysState.set_state(SystemState.ERROR)  # system error, at least one module error
 
-def handle_idling(db_SLI, system_state):
-    if db_SLI.speed_now <= 2:
-        db_SLI.timer_idling.start()
-    else:
-        db_SLI.timer_idling.stop()
+        return sys_state
 
-    if db_SLI.timer_idling.Output and db_SLI.imgGUI.btn_GUI_Idling_cmd and system_state == 4:
-        db_SLI.sysState.set_state(SystemState.IDLING_STOP)  # system idling stop
-        print("system idling")
+    def handle_camera_state(self, system_state):
+        """
+        Handle the camera state based on the system state and capture interval mode.
+        """
+        if system_state == SystemState.RUNNING:
+            self.system_store.fpAutoCapture.FP(self.system_store.p800.Output)
+            if self.system_store.fpAutoCapture.output and self.system_store.capture_interval_mode:
+                self.system_store.set_camera_ctrl_signal()
+                print("Auto capture interval")
 
-def stop_threads(db_SLI, threads):
-    print("Closing all threads")
-    db_SLI.clear_kbCtrl()
-    db_SLI.imgGUI.set_btn_GUI_exit(False)
+    def handle_user_input(self, system_state):
+        """
+        Handle user input (keyboard or GUI) to transition between system states or capture images.
+        """
+        if (self.system_store.keyboardControl == "r" or self.system_store.imgGUI.btn_GUI_capture_auto) and \
+           (system_state == SystemState.READY or system_state == SystemState.PAUSED):
+            self.transition_to_run_state(self.system_store)
 
-    # Stop and join threads here
-    for thread in threads:
-        thread.join()
+        elif (self.system_store.keyboardControl == "r" or self.system_store.imgGUI.btn_GUI_capture_auto) and \
+             (system_state == SystemState.RUNNING or system_state == SystemState.IDLING_STOP):
+            self.transition_to_pause_state(self.system_store)
+
+        elif self.system_store.keyboardControl == "a" or self.system_store.imgGUI.btn_GUI_capture_single:
+            self.system_store.set_camera_ctrl_signal()
+            self.system_store.clear_kbCtrl()
+            self.system_store.imgGUI.set_btn_GUI_capture_single(False)
+
+        elif self.system_store.keyboardControl == "c" or self.system_store.imgGUI.btn_GUI_exit:
+            self.stop_app(self.system_store)
+
+    def transition_to_run_state(self):
+        """
+        Transition the system to the RUNNING state.
+        """
+        self.system_store.sysState.set_state(SystemState.RUNNING)  # system run
+        self.system_store.clear_kbCtrl()
+        self.system_store.imgGUI.set_btn_GUI_capture_auto(False)
+        print("system run transition")
+
+    def transition_to_pause_state(self):
+        """
+        Transition the system to the PAUSED state.
+        """
+        self.system_store.sysState.set_state(SystemState.PAUSED)  # system pause
+        self.system_store.clear_kbCtrl()
+        self.system_store.imgGUI.set_btn_GUI_capture_auto(False)
+        print("system pause")
+
+    def handle_idling(self, system_state):
+        """
+        Handle the idling state based on the vehicle speed and user input.
+        """
+        if self.system_store.gps_captured_data.speed_now <= 2:
+            self.system_store.timer_idling.start()
+
+        else:
+            self.system_store.timer_idling.stop()
+
+        if self.system_store.timer_idling.Output and self.system_store.imgGUI.btn_GUI_Idling_cmd and system_state == 4:
+            self.system_store.sysState.set_state(SystemState.IDLING_STOP)  # system idling stop
+            print("system idling")
+
+    def stop_app(self):
+        """
+        Stop the application by joining all threads and processes.
+        """
+        print("Closing all threads and processes")
+        self.system_store.clear_kbCtrl()
+        self.system_store.imgGUI.set_btn_GUI_exit(False)
+
+        for thread in self.threads:
+            thread.join()
+
+        for process in self.processes.values():
+            process.join()
+
+    def control_program_flow(self):
+        """
+        Control the program flow by handling system state, camera state, user input, and idling state.
+        """
+        while True:
+            system_state = self.handle_system_state()
+            self.handle_camera_state(system_state)
+            self.handle_user_input(system_state)
+            self.handle_idling(system_state)
+            time.sleep(0.02)
+
+    def getserial(self):
+        cpuserial = "0000000000000000"
+        try:
+            with open('/proc/cpuinfo', 'r') as f:
+                for line in f:
+                    if line.startswith('Serial'):
+                        cpuserial = line.split(':')[1].strip()
+                        break
+        except:
+            cpuserial = "ERROR000000000"
+
+        return cpuserial
 
 def main():
-    db_SLI = dbSLI()
-    initialize_system(db_SLI)
+    """
+    Main function to initialize and run the application.
+    """
+    system = System()
+    system.initialize_system()
 
-    stop_event = lambda:False 
     try:
-        gThreads = start_threads(db_SLI, stop_event)
-        print("CPU serial number: ", db_SLI.CPU_serial)
-    except any as e:
+        system.start_app()
+        print("CPU serial number: ", system.system_store.CPU_serial)
+
+    except Exception as e:
         print("Error starting threads:", e)
 
     try:
-        control_program_flow(db_SLI)
+        system.control_program_flow()
+
     except KeyboardInterrupt:
-        stop_event.set()
+        system.set_stop_event()
+        pass
+
     finally:
-        stop_threads(db_SLI, gThreads)
+        system.stop_app()
         print("All threads closed")
 
 if __name__ == "__main__":
