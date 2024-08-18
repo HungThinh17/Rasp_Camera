@@ -18,6 +18,8 @@ PID_KI = 0.005
 PID_KD = 0.01
 PID_SETPOINT = 40  # Desired grayscale brightness value
 
+tuning = Picamera2.load_tuning_file("imx477.json")
+
 class CameraController:
     def __init__(self, system_store: SystemStore, stop_event):
         self.camera_store: CameraStore = system_store.camear_store
@@ -32,7 +34,12 @@ class CameraController:
 
     def start(self):
         try:
-            self.camera = Picamera2()
+            self.camera = Picamera2(tuning=tuning)
+
+            config = self.camera.create_still_configuration()
+            self.camera.configure(config)
+            self.camera.set_controls({"ExposureTime": self.system_store.camPara.ExposureTime, "AnalogueGain": self.system_store.camPara.AnalogGain})
+
             self.camera.start()
             logger.info("Camera initialized and ready for capture.")
         except Exception as e:
