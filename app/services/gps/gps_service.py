@@ -7,12 +7,13 @@
 
 import time
 import serial, time, pynmea2
+from threading import Event
 from services.gps.gps_data import GPSCaptureData
 from services.common.system_store import SystemStore
 
 class GPS_Service:
-    def __init__(self, system_store, stop_event):
-        self.system_store: SystemStore = system_store
+    def __init__(self, system_store: SystemStore, stop_event: Event):
+        self.system_store = system_store
         self.stop_event = stop_event
 
     def run(self):
@@ -24,60 +25,48 @@ class GPS_Service:
         self.system_store.GpsState.set_state(2) # ready
         gpsData = GPSCaptureData()
 
-        while not self.stop_event:
+        while not self.stop_event.is_set():
             self.system_store.GpsState.set_state(4) # running
-            str = ''
-
-            try:
-                str = serialPort.readline().decode().strip()
-            except Exception as e:
-                self.system_store.GpsState.set_state(3) # error
-                print(e)
+            str = serialPort.readline().decode().strip()
             
             if str.find('RMC') > 0: # GGA
-                try:
-                    msg = pynmea2.parse(str)
-                    # RMC msg
-                    gpsData.set_year_now(msg.datetime.year)
-                    gpsData.set_month_now(msg.datetime.month)
-                    gpsData.set_day_now(msg.datetime.day)
-                    gpsData.set_speed_now(msg.spd_over_grnd * 1.852) # knot to km/h: horizontal speed
-                    self.system_store.set_gps_captured_data(gpsData)
-                except Exception as e:
-                    print(e)
+                msg = pynmea2.parse(str)
+                # RMC msg
+                gpsData.set_year_now(msg.datetime.year)
+                gpsData.set_month_now(msg.datetime.month)
+                gpsData.set_day_now(msg.datetime.day)
+                gpsData.set_speed_now(msg.spd_over_grnd * 1.852) # knot to km/h: horizontal speed
+                self.system_store.set_gps_captured_data(gpsData)
         
             if str.find('GGA') > 0: # GGA
-                try:
-                    msg = pynmea2.parse(str)
-                    if msg.altitude == None:
-                        msg.altitude = 0
-                    
-                    # GGA msg
-                    print(msg.timestamp,'Lat:',round(msg.latitude,6),'Lon:',round(msg.longitude,6),'Alt:',msg.altitude,'Sats:',msg.num_sats, 'Speed: ', gpsData.speed_now)
-                    
-                    # Set time info
-                    gpsData.set_hour_now(msg.timestamp.hour)
-                    gpsData.set_minute_now(msg.timestamp.minute)
-                    gpsData.set_second_now(msg.timestamp.second)
+                msg = pynmea2.parse(str)
+                if msg.altitude == None:
+                    msg.altitude = 0
+                
+                # GGA msg
+                print(msg.timestamp,'Lat:',round(msg.latitude,6),'Lon:',round(msg.longitude,6),'Alt:',msg.altitude,'Sats:',msg.num_sats, 'Speed: ', gpsData.speed_now)
+                
+                # Set time info
+                gpsData.set_hour_now(msg.timestamp.hour)
+                gpsData.set_minute_now(msg.timestamp.minute)
+                gpsData.set_second_now(msg.timestamp.second)
 
-                    # Set GPS info
-                    gpsData.set_lat_now(msg.latitude)
-                    gpsData.set_lon_now(msg.longitude)
-                    gpsData.set_alt_now(msg.altitude)
-                    gpsData.set_numsat_now(msg.num_sats)
-                    gpsData.set_reset_msec(True)
-                    self.system_store.set_gps_captured_data(gpsData)
-                except Exception as e:
-                    print(e)
+                # Set GPS info
+                gpsData.set_lat_now(msg.latitude)
+                gpsData.set_lon_now(msg.longitude)
+                gpsData.set_alt_now(msg.altitude)
+                gpsData.set_numsat_now(msg.num_sats)
+                gpsData.set_reset_msec(True)
+                self.system_store.set_gps_captured_data(gpsData)
                     
-            if self.stop_event:
-                self.system_store.GpsState.set_state(5) # stop
+            self.system_store.GpsState.set_state(5) # stop
             time.sleep(0.1)
         return
 
-def gps_service_worker(system_store, stop_event):
+def gps_service_worker(system_store: SystemStore, stop_event: Event):
     try:
         gps_service = GPS_Service(system_store, stop_event)
         gps_service.run()
     except Exception as e:
+        system_store.GpsState.set_state(3) # error
         print(e)

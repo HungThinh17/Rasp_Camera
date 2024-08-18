@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 import logging
 from PIL import Image, ImageTk
-from services.common.shared_keys import SharedKey
+from threading import Event
 from services.common.system_store import SystemStore
 from services.gui.guiPanel import GUIPanel
 from services.gui.guiConfig import GUIConfig
@@ -19,10 +19,10 @@ logging.basicConfig(
 )
 
 class GUI_Service:
-    def __init__(self, system_store, stop_event):
-        self.system_store:SystemStore = system_store
+    def __init__(self, system_store:SystemStore, stop_event: Event):
+        self.system_store = system_store
         self.stop_event = stop_event
-        self.bg_img = None
+        self.background_img = None
 
     def init_gui(self):
         self.parent.title(GUIConfig.WINDOW_TITLE)
@@ -84,13 +84,13 @@ class GUI_Service:
         if self.system_store.imgGUI.newImg:
             self.system_store.imgGUI.set_newImg(False)
 
-            self.bg_img = Image.fromarray(self.system_store.imgGUI.lastImg)
+            self.background_img = Image.fromarray(self.system_store.imgGUI.lastImg)
             # Check if the image mode is RGBA and convert to RGB if necessary
-            if self.bg_img.mode == 'RGBA':
-                self.bg_img = self.bg_img.convert('RGB')
-            self.bg_img = self.bg_img.resize((GUIConfig.WINDOW_WIDTH, GUIConfig.WINDOW_HEIGHT), Image.Resampling.LANCZOS)
-            self.bg_img = ImageTk.PhotoImage(self.bg_img)
-            self.bg_panel.config(image=self.bg_img)
+            if self.background_img.mode == 'RGBA':
+                self.background_img = self.background_img.convert('RGB')
+            self.background_img = self.background_img.resize((GUIConfig.WINDOW_WIDTH, GUIConfig.WINDOW_HEIGHT), Image.Resampling.LANCZOS)
+            self.background_img = ImageTk.PhotoImage(self.background_img)
+            self.bg_panel.config(image=self.background_img)
 
         # Update status label
         if system_state == 4:
@@ -128,11 +128,11 @@ class GUI_Service:
         )
         self.gui_widget.config("lbInfo", text=info_text)
 
-        if self.stop_event:
+        if self.stop_event.is_set():
             self.parent.quit()
-        else:
-            # Schedule the next update
-            self.parent.after(100, self.update_gui)
+
+        # Schedule the next update
+        self.parent.after(100, self.update_gui)
 
     def run(self):
         self.parent = tk.Tk()

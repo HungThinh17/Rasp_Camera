@@ -24,14 +24,9 @@ except OSError as e:
     print(f"Error: {e}")
 # =============================================
 
-from enum import Enum
-from threading import Thread
-from multiprocessing import Process, Manager, Queue
-
+from threading import Thread, Event
 from services.common.system_store import SystemStore
-from services.camera.camera_store import CameraStore
 from services.database.my_sql_database import MySliDatabase
-from services.common.shared_keys import SharedKey
 from services.common.system_status import SystemState
 
 from services.timer.timer_service import timer_service_worker
@@ -50,7 +45,7 @@ class System:
         # Create a shared dictionary to store the database connection
         self.system_store: SystemStore = None
         self.sli_database: MySliDatabase = None
-        self.stop_event = False
+        self.stop_event = Event()
 
     def initialize_system(self):
         """
@@ -64,8 +59,7 @@ class System:
         print("Hello SLI Image !")
 
     def set_stop_event(self):
-        # TODO - need to correct this mechanism to stop all child processes and threads.
-        self.stop_event = True
+        self.stop_event.set()
 
     def start_app(self):
         """
@@ -148,7 +142,7 @@ class System:
             self.system_store.imgGUI.set_btn_GUI_capture_single(False)
 
         elif self.system_store.keyboardControl == "c" or self.system_store.imgGUI.btn_GUI_exit:
-            self.stop_app(self.system_store)
+            self.stop_app()
 
     def transition_to_run_state(self):
         """
@@ -189,6 +183,7 @@ class System:
         print("Closing all threads and processes")
         self.system_store.clear_kbCtrl()
         self.system_store.imgGUI.set_btn_GUI_exit(False)
+        self.set_stop_event()
 
         for thread in self.threads:
             thread.join()
@@ -200,7 +195,7 @@ class System:
         """
         Control the program flow by handling system state, camera state, user input, and idling state.
         """
-        while True:
+        while not self.stop_event.is_set():
             system_state = self.handle_system_state()
             self.handle_camera_state(system_state)
             self.handle_user_input(system_state)
@@ -238,12 +233,12 @@ def main():
         system.control_program_flow()
 
     except KeyboardInterrupt:
-        system.set_stop_event()
+        system.stop_app()
         pass
 
     finally:
-        system.stop_app()
         print("All threads closed")
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()

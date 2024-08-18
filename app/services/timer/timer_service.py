@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import time
-from services.common.shared_keys import SharedKey
+from threading import Event
 from services.common.system_store import SystemStore
 
 class TimerService:
-    def __init__(self, system_store, stop_event):
-        self.system_store: SystemStore = system_store
+    def __init__(self, system_store: SystemStore, stop_event: Event):
+        self.system_store = system_store
         self.stop_event = stop_event
     
     def run(self):
@@ -14,7 +14,7 @@ class TimerService:
         tn = time.perf_counter()
         tn1 = tn
 
-        while not self.stop_event:
+        while not self.stop_event.is_set():
             tn = time.perf_counter()
             dt = 1000 * (tn - tn1)
 
@@ -71,6 +71,9 @@ class TimerService:
             time.sleep(0.001)
         return
 
-def timer_service_worker(system_store, stop_event):
-    timer_service = TimerService(system_store, stop_event)
-    timer_service.run()
+def timer_service_worker(system_store: SystemStore, stop_event: Event):
+    try:
+        timer_service = TimerService(system_store, stop_event)
+        timer_service.run()
+    except Exception as e:
+        print(e)

@@ -4,9 +4,9 @@ import numpy as np
 from simple_pid import PID
 from picamera2 import Picamera2
 from typing import Tuple, Optional
+from threading import Event
 from services.devTools.profilingService import Profiler
 from services.common.system_store import SystemStore
-from services.common.shared_keys import SharedKey
 from services.camera.camera_store import CameraStore
 from services.image.img_metadata import RawImageData
 
@@ -21,9 +21,9 @@ PID_SETPOINT = 40  # Desired grayscale brightness value
 tuning = Picamera2.load_tuning_file("imx477.json")
 
 class CameraController:
-    def __init__(self, system_store: SystemStore, stop_event):
-        self.camera_store: CameraStore = system_store.camear_store
-        self.system_store: SystemStore = system_store
+    def __init__(self, system_store: SystemStore, stop_event: Event):
+        self.camera_store = system_store.camear_store
+        self.system_store = system_store
         self.stop_event = stop_event
 
         self.camera = None
@@ -35,11 +35,10 @@ class CameraController:
     def start(self):
         try:
             self.camera = Picamera2(tuning=tuning)
-
             config = self.camera.create_still_configuration()
             self.camera.configure(config)
-            self.camera.set_controls({"ExposureTime": self.system_store.camPara.ExposureTime, "AnalogueGain": self.system_store.camPara.AnalogGain})
-
+            # TODO - this might caused the camera capture slower !!
+            # self.camera.set_controls({"ExposureTime": self.system_store.camPara.ExposureTime, "AnalogueGain": self.system_store.camPara.AnalogGain})
             self.camera.start()
             logger.info("Camera initialized and ready for capture.")
         except Exception as e:
@@ -110,7 +109,7 @@ class CameraController:
 
         logger.info("Waiting for capture signal...")
 
-        while not self.stop_event:
+        while not self.stop_event.is_set():
             self.system_store.cameraState.set_state(4)  # running
 
             if self.system_store.camPara.update:

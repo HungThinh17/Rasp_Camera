@@ -1,7 +1,7 @@
 import os
 import time
 import logging
-from multiprocessing import Queue
+from threading import Event
 from datetime import datetime, timezone
 from PIL import Image
 from services.common.system_store import SystemStore
@@ -18,7 +18,7 @@ IMAGES_DIR = os.path.join(os.getcwd(), "storeImages")
 class ImageProcessor:
     def __init__(self, system_store: SystemStore, stop_event):
         self.system_store = system_store
-        self.stop_event = stop_event
+        self.stop_event: Event = stop_event
         self.cameraStore: CameraStore = system_store.camear_store
 
     def save_image_to_file(self, img_data):
@@ -54,7 +54,7 @@ class ImageProcessor:
 
     def run(self):
         logger.info("Starting image conversion and saving...")
-        while not self.stop_event:
+        while not self.stop_event.is_set():
             if self.system_store.gps_captured_data.year_now != 0 and not self.cameraStore.is_img_raw_db_empty():
                 img_data = self.cameraStore.get_first_img_raw_from_queue()
                 self.save_image_to_file(img_data)

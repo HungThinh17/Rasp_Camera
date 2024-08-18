@@ -1,0 +1,27 @@
+{
+    'use_case': 'still', 
+    'transform': <libcamera.Transform 'identity'>, 
+    'colour_space': <libcamera.ColorSpace 'sYCC'>, 
+    'buffer_count': 1, 
+    'queue': True, 
+    'main': {
+        'format': 'BGR888', 
+        'size': (4056, 3040), 
+        'stride': 12192, 
+        'framesize': 37063680
+    }, 
+    'lores': None, 
+    'raw': {
+        'format': 'SBGGR12_CSI2P', 
+        'size': (4056, 3040), 
+        'stride': 6112, 
+        'framesize': 18580480
+    }, 
+    'controls': {
+        'NoiseReductionMode': <NoiseReductionModeEnum.HighQuality: 2>, 
+        'FrameDurationLimits': (100,1000000000)
+    }, 
+    'sensor': {}, 
+    'display': None, 
+    'encode': None
+}
