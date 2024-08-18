@@ -22,6 +22,7 @@ class GUI_Service:
     def __init__(self, system_store, stop_event):
         self.system_store:SystemStore = system_store
         self.stop_event = stop_event
+        self.bg_img = None
 
     def init_gui(self):
         self.parent.title(GUIConfig.WINDOW_TITLE)
@@ -79,19 +80,17 @@ class GUI_Service:
         system_state = self.system_store.sysState.get_state()
         system_state_str = str(system_state)
 
-        self.system_store.fpUpdatePic.FP(self.system_store.p500.Output)
-
         # Update new image capture
-        if self.system_store.imgGUI.newImg and self.system_store.fpUpdatePic.output:
+        if self.system_store.imgGUI.newImg:
             self.system_store.imgGUI.set_newImg(False)
 
-            bg_img = Image.fromarray(self.system_store.imgGUI.lastImg)
+            self.bg_img = Image.fromarray(self.system_store.imgGUI.lastImg)
             # Check if the image mode is RGBA and convert to RGB if necessary
-            if bg_img.mode == 'RGBA':
-                bg_img = bg_img.convert('RGB')
-            bg_img = bg_img.resize((GUIConfig.WINDOW_WIDTH, GUIConfig.WINDOW_HEIGHT), Image.Resampling.LANCZOS)
-            bg_img = ImageTk.PhotoImage(bg_img)
-            self.bg_panel.config(image=bg_img)
+            if self.bg_img.mode == 'RGBA':
+                self.bg_img = self.bg_img.convert('RGB')
+            self.bg_img = self.bg_img.resize((GUIConfig.WINDOW_WIDTH, GUIConfig.WINDOW_HEIGHT), Image.Resampling.LANCZOS)
+            self.bg_img = ImageTk.PhotoImage(self.bg_img)
+            self.bg_panel.config(image=self.bg_img)
 
         # Update status label
         if system_state == 4:
@@ -142,5 +141,8 @@ class GUI_Service:
         self.parent.mainloop()
 
 def gui_service_worker(system_store, stop_event):
-    gui_service = GUI_Service(system_store, stop_event)
-    gui_service.run()
+    try:
+        gui_service = GUI_Service(system_store, stop_event)
+        gui_service.run()
+    except Exception as e:
+        logging.error(f"Error in GUI service: {e}")

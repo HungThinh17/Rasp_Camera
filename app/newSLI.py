@@ -48,9 +48,6 @@ class System:
         self.processes = {}
 
         # Create a shared dictionary to store the database connection
-        manager = Manager()
-        self.shared_obj = manager.dict()
-        self.shared_data_queue = Queue()
         self.system_store: SystemStore = None
         self.sli_database: MySliDatabase = None
         self.stop_event = False
@@ -59,9 +56,7 @@ class System:
         """
         Initialize the system components (camera, image processor, and GUI controller).
         """
-        self.shared_obj[SharedKey.SYSTEM_STORE] = SystemStore()
-        self.shared_obj[SharedKey.STOP_EVENT] = self.stop_event
-        self.system_store = self.shared_obj[SharedKey.SYSTEM_STORE]
+        self.system_store = SystemStore()
         self.sli_database = MySliDatabase()
 
         self.system_store.set_cpu_serial(self.getserial())
@@ -69,44 +64,14 @@ class System:
         print("Hello SLI Image !")
 
     def set_stop_event(self):
-        self.shared_obj[SharedKey.STOP_EVENT] = True
+        # TODO - need to correct this mechanism to stop all child processes and threads.
         self.stop_event = True
-
-    def camera_process_worker(self):
-        """
-        Create and start threads for camera-related tasks (gain adjustment, camera capture, and image conversion).
-        """
-        threads = []
-        camera_store = CameraStore()
-
-        # capture camera
-        camera_thread = Thread(name='Camera Capture', target=camera_controller_worker, args=(self.shared_obj, camera_store))
-        threads.append(camera_thread)
-
-        # save image array to file
-        image_thread = Thread(name='Convert Image', target=image_processor_worker, args=(self.shared_obj, camera_store, self.shared_data_queue))
-        threads.append(image_thread)
-
-        # Start all threads
-        for thread in threads:
-            thread.start()
 
     def start_app(self):
         """
         Start the application by creating and starting threads and processes for various tasks.
         """
         self.threads = []
-        self.processes = {}
-
-        # Child Processes Initialize
-        # =========================
-
-        # Process: Camera worker process initialize
-        camera_process = Process(name='Camera Services', target=self.camera_process_worker)
-        self.processes['image_process'] = camera_process
-
-        # Threading Initialize
-        # =========================
 
         # Thread: system timer
         timer_thread = Thread(name='Timer Service', target=timer_service_worker, args=(self.system_store, self.stop_event,))
@@ -121,15 +86,16 @@ class System:
         self.threads.append(gui_thread)
 
         # Thread: input database
-        data_thread = Thread(name='Database Service', target=database_service_worker, args=(self.system_store, self.stop_event, self.shared_data_queue, self.sli_database))
+        data_thread = Thread(name='Database Service', target=database_service_worker, args=(self.system_store, self.stop_event, self.sli_database))
         self.threads.append(data_thread)
 
-        # Start all processes and threads
-        # =========================
+        # capture camera
+        camera_thread = Thread(name='Camera Service', target=camera_controller_worker, args=(self.system_store, self.stop_event))
+        self.threads.append(camera_thread)
 
-        # Start all processes
-        for process in self.processes.values():
-            process.start()
+        # save image array to file
+        image_thread = Thread(name='Image Service', target=image_processor_worker, args=(self.system_store, self.stop_event))
+        self.threads.append(image_thread)
 
         # Start all threads
         for thread in self.threads:

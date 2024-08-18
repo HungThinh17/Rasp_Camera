@@ -4,10 +4,10 @@ import logging
 from multiprocessing import Queue
 from datetime import datetime, timezone
 from PIL import Image
+from services.common.system_store import SystemStore
 from services.common.shared_keys import SharedKey
 from services.image.img_filedata import FileImageData
 from services.camera.camera_store import CameraStore
-from services.common.system_store import SystemStore
 from services.devTools.profilingService import Profiler
 
 logger = logging.getLogger(__name__)
@@ -16,18 +16,16 @@ logger = logging.getLogger(__name__)
 IMAGES_DIR = os.path.join(os.getcwd(), "storeImages")
 
 class ImageProcessor:
-    def __init__(self, shared_obj, camera_store, shared_data_queue):
-        self.shared_obj = shared_obj
-        self.system_store: SystemStore = self.shared_obj[SharedKey.SYSTEM_STORE]
-        self.stop_event = self.shared_obj[SharedKey.STOP_EVENT]
-        self.cameraStore: CameraStore = camera_store
-        self.shared_data_queue: Queue = shared_data_queue
+    def __init__(self, system_store: SystemStore, stop_event):
+        self.system_store = system_store
+        self.stop_event = stop_event
+        self.cameraStore: CameraStore = system_store.camear_store
 
     def save_image_to_file(self, img_data):
         with Profiler(function_call="saveToFileStoreToDb"):
             current_date = datetime.now(timezone.utc)
             dirname1 = current_date.strftime("%Y%m%d")
-            dirname2 = f"{img_data.img_hour:02d}{img_data.img_min:02d}{img_data.img_sec:02d}{img_data.img_msec:02d}"
+            dirname2 = f"{img_data.img_hour:02d}{img_data.img_min:02d}{img_data.img_sec:02d}{img_data.img_msec:0f}"
             filename = f"{dirname1}{dirname2}"
 
             image_dir = os.path.join(IMAGES_DIR, dirname1)
@@ -52,7 +50,7 @@ class ImageProcessor:
                 img_data.img_numSat,
             )
 
-            self.shared_data_queue.put(image_data)
+            self.cameraStore.put_img_file_to_queue(image_data)
 
     def run(self):
         logger.info("Starting image conversion and saving...")
@@ -65,6 +63,9 @@ class ImageProcessor:
 
         logger.info("Image conversion and saving stopped.")
 
-def image_processor_worker(shared_obj, camera_store, shared_data_queue):
-    image_processor = ImageProcessor(shared_obj, camera_store, shared_data_queue)
-    image_processor.run()
+def image_processor_worker(system_store, stop_event):
+    try:
+        image_processor = ImageProcessor(system_store, stop_event)
+        image_processor.run()
+    except Exception as e:
+        logger.error(f"Error in image_processor_worker: {e}")

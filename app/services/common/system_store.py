@@ -1,4 +1,5 @@
 import threading
+from services.camera.camera_store import CameraStore
 from services.gps.gps_data import GPSCaptureData
 from services.camera.cam_parameter import dbCamPara
 from services.timer.custom_timer import CustomTimer, cFP
@@ -22,6 +23,7 @@ class SystemStore:
         self.ImuState = dbDeviceState()
         self.DataBaseState = dbDeviceState()
         self.gps_captured_data = GPSCaptureData()
+        self.camear_store = CameraStore()
 
         self.camera_ctrl_signal = False
         self.camera_status_signal = False
