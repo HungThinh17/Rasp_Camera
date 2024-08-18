@@ -63,6 +63,9 @@ class SystemStore:
         self.fpAutoCapture = cFP()
         self.fpUpdatePic = cFP()
 
+        # system logger
+        self.logger = None
+
     def __getstate__(self):
         state = self.__dict__.copy()
         del state['lock']  # Remove the non-picklable lock object

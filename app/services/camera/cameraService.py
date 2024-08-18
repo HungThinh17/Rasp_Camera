@@ -7,10 +7,7 @@ from typing import Tuple, Optional
 from threading import Event
 from services.devTools.profilingService import Profiler
 from services.common.system_store import SystemStore
-from services.camera.camera_store import CameraStore
 from services.image.img_metadata import RawImageData
-
-logger = logging.getLogger(__name__)
 
 # PID controller parameters
 PID_KP = 0.02
@@ -25,6 +22,7 @@ class CameraController:
         self.camera_store = system_store.camear_store
         self.system_store = system_store
         self.stop_event = stop_event
+        self.logger = system_store.logger
 
         self.camera = None
         self.pid = PID(PID_KP, PID_KI, PID_KD, setpoint=PID_SETPOINT)
@@ -33,40 +31,24 @@ class CameraController:
         self.pid.sample_time = 0.01
 
     def start(self):
-        try:
-            self.camera = Picamera2(tuning=tuning)
-            config = self.camera.create_still_configuration()
-            self.camera.configure(config)
-            # TODO - this might caused the camera capture slower !!
-            # self.camera.set_controls({"ExposureTime": self.system_store.camPara.ExposureTime, "AnalogueGain": self.system_store.camPara.AnalogGain})
-            self.camera.start()
-            logger.info("Camera initialized and ready for capture.")
-        except Exception as e:
-            logger.error(f"Error initializing camera: {e}")
+        self.camera = Picamera2(tuning=tuning)
+        config = self.camera.create_still_configuration()
+        self.camera.configure(config)
+        # TODO - this might caused the camera capture slower !!
+        # self.camera.set_controls({"ExposureTime": self.system_store.camPara.ExposureTime, "AnalogueGain": self.system_store.camPara.AnalogGain})
+        self.camera.start()
+        self.logger.info(f"{__class__.__name__}:Camera initialized and ready for capture.")
 
     def stop(self):
-        try:
-            if self.camera:
-                self.camera.stop()
-                self.camera = None
-            logger.info("Camera stopped.")
-        except Exception as e:
-            logger.error(f"Error stopping camera: {e}")
+        self.camera.stop()
+        self.camera = None
+        self.logger.info(f"{__class__.__name__}:Camera stopped.")
 
     def capture_image(self) -> Optional[Tuple[np.ndarray, float]]:
         with Profiler(function_call="captureImage"):
-            if not self.camera:
-                logger.error("Camera not initialized.")
-                return None, 0.0
-
-            logger.info("Capturing image...")
+            self.logger.info(f"{__class__.__name__}:Capturing image...")
             start_time = time.perf_counter()
-
-            try:
-                image_arr = self.camera.capture_array()
-            except Exception as e:
-                logger.error(f"Error capturing image: {e}")
-                return None, 0.0
+            image_arr = self.camera.capture_array()
 
             gps_captured_data = self.system_store.get_gps_captured_data()
             img_raw_data = RawImageData(image_arr, gps_captured_data)
@@ -77,7 +59,8 @@ class CameraController:
 
             end_time = time.perf_counter()
             capture_time = end_time - start_time
-            logger.info(
+            self.logger.info(
+                f"{__class__.__name__}:"
                 f"Image captured. Brightness: {self.system_store.get_last_img_grey_brightness()}, "
                 f"Gain: {self.system_store.camPara.AnalogGain}, Time: {capture_time:.6f} seconds"
             )
@@ -94,7 +77,7 @@ class CameraController:
             self.system_store.camPara.set_analog_gain(new_gain)
             self.system_store.camPara.set_update()
 
-            logger.info(f"Brightness: {grey_brightness}, Gain: {new_gain}")
+            self.logger.info(f"{__class__.__name__}: Brightness: {grey_brightness}, Gain: {new_gain}")
 
     def image_brightness_grey(self, img: np.ndarray) -> float:
         roi = img[:4056, 1216:3040, :]  # 1216 = 3040*2/5
@@ -107,7 +90,7 @@ class CameraController:
         time.sleep(1)
         self.system_store.cameraState.set_state(2)  # ready
 
-        logger.info("Waiting for capture signal...")
+        self.logger.info(f"{__class__.__name__}:Waiting for capture signal...")
 
         while not self.stop_event.is_set():
             self.system_store.cameraState.set_state(4)  # running
@@ -137,4 +120,4 @@ def camera_controller_worker(system_store, stop_event):
         camera_controller = CameraController(system_store, stop_event)
         camera_controller.run()
     except Exception as e:
-        logger.error(f"Error in camera controller worker: {e}")
+        system_store.logger.error(f"Error in camera controller worker: {e}")

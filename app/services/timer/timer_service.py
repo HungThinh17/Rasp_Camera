@@ -76,4 +76,4 @@ def timer_service_worker(system_store: SystemStore, stop_event: Event):
         timer_service = TimerService(system_store, stop_event)
         timer_service.run()
     except Exception as e:
-        print(e)
+        system_store.logger.error(f"Error in Timer service: {e}")

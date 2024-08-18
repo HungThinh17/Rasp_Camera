@@ -1,33 +1,25 @@
 import os
 import tkinter as tk
-import logging
 from PIL import Image, ImageTk
 from threading import Event
+from enum import Enum
+from services.common.system_status import SystemState
 from services.common.system_store import SystemStore
 from services.gui.guiPanel import GUIPanel
 from services.gui.guiConfig import GUIConfig
 from services.gui.guiWidget import GUIWidget
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(f'{os.getcwd()}/archives/logs/gui.log'),
-        logging.StreamHandler()
-    ]
-)
-
 class GUI_Service:
-    def __init__(self, system_store:SystemStore, stop_event: Event):
+    def __init__(self, system_store: SystemStore, stop_event: Event):
         self.system_store = system_store
         self.stop_event = stop_event
         self.background_img = None
+        self.logger = system_store.logger
 
     def init_gui(self):
         self.parent.title(GUIConfig.WINDOW_TITLE)
         self.parent.geometry(f"{GUIConfig.WINDOW_WIDTH}x{GUIConfig.WINDOW_HEIGHT}")
-        logging.info(f"Window created with title: {GUIConfig.WINDOW_TITLE} and geometry: {GUIConfig.WINDOW_WIDTH}x{GUIConfig.WINDOW_HEIGHT}")
+        self.logger.info(f"{__class__.__name__}: Window created with title: {GUIConfig.WINDOW_TITLE} and geometry: {GUIConfig.WINDOW_WIDTH}x{GUIConfig.WINDOW_HEIGHT}")
 
         # Create the background panel
         image_path = os.path.join(os.getcwd(), "Digime.jpeg")
@@ -60,25 +52,24 @@ class GUI_Service:
 
     def handle_bg_image_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_capture_auto(True)
-        logging.info("Background image button clicked, setting capture auto mode")
+        self.logger.info(f"{__class__.__name__}: Background image button clicked, setting capture auto mode")
 
     def handle_capture_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_capture_single(True)
-        logging.info("Capture button clicked, setting capture single mode")
+        self.logger.info(f"{__class__.__name__}: Capture button clicked, setting capture single mode")
 
     def handle_idling_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_Idling_cmd(not self.system_store.imgGUI.btn_GUI_Idling_cmd)
-        logging.info(f"Idling button clicked, setting idling mode to: ??")
+        self.logger.info(f"{__class__.__name__}: Idling button clicked, setting idling mode to: {self.system_store.imgGUI.btn_GUI_Idling_cmd}")
 
     def handle_exit_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_exit(True)
         self.parent.quit()
         self.parent.destroy()
-        logging.info("Exit button clicked, closing the application")
+        self.logger.info(f"{__class__.__name__}: Exit button clicked, closing the application")
 
     def update_gui(self):
         system_state = self.system_store.sysState.get_state()
-        system_state_str = str(system_state)
 
         # Update new image capture
         if self.system_store.imgGUI.newImg:
@@ -93,14 +84,14 @@ class GUI_Service:
             self.bg_panel.config(image=self.background_img)
 
         # Update status label
-        if system_state == 4:
+        if system_state == SystemState.RUNNING:
             pass
-        elif system_state == 3:
-            self.gui_widget.config("lbStatus", text=f"System status {system_state_str}: ERROR", bg="red")
-        elif system_state == 7:
-            self.gui_widget.config("lbStatus", text=f"System status {system_state_str}: IDLING, speed < 2", bg="gold")
+        elif system_state == SystemState.ERROR:
+            self.gui_widget.config("lbStatus", text=f"System status {system_state.name}: ERROR", bg="red")
+        elif system_state == SystemState.IDLING_STOP:
+            self.gui_widget.config("lbStatus", text=f"System status {system_state.name}: IDLING, speed < 2", bg="gold")
         else:
-            self.gui_widget.config("lbStatus", text=f"System status {system_state_str}: PAUSE, waiting for run command", bg="gold")
+            self.gui_widget.config("lbStatus", text=f"System status {system_state.name}: PAUSE, waiting for run command", bg="gold")
 
         # Update idling button text
         if self.system_store.imgGUI.btn_GUI_Idling_cmd:
@@ -145,4 +136,4 @@ def gui_service_worker(system_store, stop_event):
         gui_service = GUI_Service(system_store, stop_event)
         gui_service.run()
     except Exception as e:
-        logging.error(f"Error in GUI service: {e}")
+        system_store.logger.error(f"Error in GUI service: {e}")

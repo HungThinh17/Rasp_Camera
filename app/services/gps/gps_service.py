@@ -6,7 +6,8 @@
 # sudo cgps -s
 
 import time
-import serial, time, pynmea2
+import serial
+import pynmea2
 from threading import Event
 from services.gps.gps_data import GPSCaptureData
 from services.common.system_store import SystemStore
@@ -15,36 +16,38 @@ class GPS_Service:
     def __init__(self, system_store: SystemStore, stop_event: Event):
         self.system_store = system_store
         self.stop_event = stop_event
+        self.logger = system_store.logger
 
     def run(self):
         port = '/dev/serial0'
         baud = 9600
 
         self.system_store.GpsState.set_state(1) # init
-        serialPort = serial.Serial(port, baudrate = baud, timeout = 0.5)
+        serialPort = serial.Serial(port, baudrate=baud, timeout=0.5)
         self.system_store.GpsState.set_state(2) # ready
         gpsData = GPSCaptureData()
 
         while not self.stop_event.is_set():
             self.system_store.GpsState.set_state(4) # running
-            str = serialPort.readline().decode().strip()
+            str_data = serialPort.readline().decode().strip()
             
-            if str.find('RMC') > 0: # GGA
-                msg = pynmea2.parse(str)
+            if str_data.find('RMC') > 0: # GGA
+                msg = pynmea2.parse(str_data)
                 # RMC msg
                 gpsData.set_year_now(msg.datetime.year)
                 gpsData.set_month_now(msg.datetime.month)
                 gpsData.set_day_now(msg.datetime.day)
-                gpsData.set_speed_now(msg.spd_over_grnd * 1.852) # knot to km/h: horizontal speed
+                spd_over_grnd = msg.spd_over_grnd if msg.spd_over_grnd is not None else 0
+                gpsData.set_speed_now(spd_over_grnd * 1.852) # knot to km/h: horizontal speed
                 self.system_store.set_gps_captured_data(gpsData)
         
-            if str.find('GGA') > 0: # GGA
-                msg = pynmea2.parse(str)
-                if msg.altitude == None:
+            if str_data.find('GGA') > 0: # GGA
+                msg = pynmea2.parse(str_data)
+                if msg.altitude is None:
                     msg.altitude = 0
                 
                 # GGA msg
-                print(msg.timestamp,'Lat:',round(msg.latitude,6),'Lon:',round(msg.longitude,6),'Alt:',msg.altitude,'Sats:',msg.num_sats, 'Speed: ', gpsData.speed_now)
+                self.logger.info(f"{msg.timestamp} Lat: {round(msg.latitude, 6)} Lon: {round(msg.longitude, 6)} Alt: {msg.altitude} Sats: {msg.num_sats} Speed: {gpsData.speed_now}")
                 
                 # Set time info
                 gpsData.set_hour_now(msg.timestamp.hour)
@@ -69,4 +72,4 @@ def gps_service_worker(system_store: SystemStore, stop_event: Event):
         gps_service.run()
     except Exception as e:
         system_store.GpsState.set_state(3) # error
-        print(e)
+        system_store.logger.error(f"Error in GPS service: {e}")

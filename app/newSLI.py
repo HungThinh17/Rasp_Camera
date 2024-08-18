@@ -28,6 +28,7 @@ from threading import Thread, Event
 from services.common.system_store import SystemStore
 from services.database.my_sql_database import MySliDatabase
 from services.common.system_status import SystemState
+from services.devTools.logger import Logger
 
 from services.timer.timer_service import timer_service_worker
 from services.gps.gps_service import gps_service_worker
@@ -52,11 +53,14 @@ class System:
         Initialize the system components (camera, image processor, and GUI controller).
         """
         self.system_store = SystemStore()
+        self.system_store.logger = Logger(os.path.join(os.getcwd(), "archives/logs"), "sli_image.log").get_logger()
+        self.logger = self.system_store.logger
+
         self.sli_database = MySliDatabase()
 
         self.system_store.set_cpu_serial(self.getserial())
         self.system_store.sysState.set_state(SystemState.INIT)  # init
-        print("Hello SLI Image !")
+        self.logger.info(f"{__class__.__name__}: Hello SLI Image !")
 
     def set_stop_event(self):
         self.stop_event.set()
@@ -122,7 +126,7 @@ class System:
             self.system_store.fpAutoCapture.FP(self.system_store.p800.Output)
             if self.system_store.fpAutoCapture.output and self.system_store.capture_interval_mode:
                 self.system_store.set_camera_ctrl_signal()
-                print("Auto capture interval")
+                self.logger.info(f"{__class__.__name__}: Auto capture interval")
 
     def handle_user_input(self, system_state):
         """
@@ -151,7 +155,7 @@ class System:
         self.system_store.sysState.set_state(SystemState.RUNNING)  # system run
         self.system_store.clear_kbCtrl()
         self.system_store.imgGUI.set_btn_GUI_capture_auto(False)
-        print("system run transition")
+        self.logger.info(f"{__class__.__name__}: system run transition")
 
     def transition_to_pause_state(self):
         """
@@ -160,7 +164,7 @@ class System:
         self.system_store.sysState.set_state(SystemState.PAUSED)  # system pause
         self.system_store.clear_kbCtrl()
         self.system_store.imgGUI.set_btn_GUI_capture_auto(False)
-        print("system pause")
+        self.logger.info(f"{__class__.__name__}: system pause")
 
     def handle_idling(self, system_state):
         """
@@ -174,13 +178,13 @@ class System:
 
         if self.system_store.timer_idling.Output and self.system_store.imgGUI.btn_GUI_Idling_cmd and system_state == 4:
             self.system_store.sysState.set_state(SystemState.IDLING_STOP)  # system idling stop
-            print("system idling")
+            self.logger.info(f"{__class__.__name__}: system idling")
 
     def stop_app(self):
         """
         Stop the application by joining all threads and processes.
         """
-        print("Closing all threads and processes")
+        self.logger.info(f"{__class__.__name__}: Closing all threads and processes")
         self.system_store.clear_kbCtrl()
         self.system_store.imgGUI.set_btn_GUI_exit(False)
         self.set_stop_event()
@@ -219,25 +223,21 @@ def main():
     """
     Main function to initialize and run the application.
     """
-    system = System()
-    system.initialize_system()
-
     try:
+        system = System()
+        system.initialize_system()
         system.start_app()
-        print("CPU serial number: ", system.system_store.CPU_serial)
+        system.logger.info(f"CPU serial number: {system.system_store.CPU_serial}")
+        system.control_program_flow()
 
     except Exception as e:
-        print("Error starting threads:", e)
-
-    try:
-        system.control_program_flow()
+        system.logger.error(f"Error starting threads: {e}")
 
     except KeyboardInterrupt:
         system.stop_app()
-        pass
 
     finally:
-        print("All threads closed")
+        system.logger.info("All threads closed")
         sys.exit(0)
 
 if __name__ == "__main__":

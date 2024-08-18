@@ -1,16 +1,12 @@
 import os
 import time
-import logging
 from threading import Event
 from datetime import datetime, timezone
 from PIL import Image
 from services.common.system_store import SystemStore
-from services.common.shared_keys import SharedKey
 from services.image.img_filedata import FileImageData
 from services.camera.camera_store import CameraStore
 from services.devTools.profilingService import Profiler
-
-logger = logging.getLogger(__name__)
 
 # Image storage directory
 IMAGES_DIR = os.path.join(os.getcwd(), "storeImages")
@@ -20,6 +16,7 @@ class ImageProcessor:
         self.system_store = system_store
         self.stop_event: Event = stop_event
         self.cameraStore: CameraStore = system_store.camear_store
+        self.logger = system_store.logger
 
     def save_image_to_file(self, img_data):
         with Profiler(function_call="saveToFileStoreToDb"):
@@ -53,7 +50,7 @@ class ImageProcessor:
             self.cameraStore.put_img_file_to_queue(image_data)
 
     def run(self):
-        logger.info("Starting image conversion and saving...")
+        self.logger.info(f"{__class__.__name__}:Starting image conversion and saving...")
         while not self.stop_event.is_set():
             if self.system_store.gps_captured_data.year_now != 0 and not self.cameraStore.is_img_raw_db_empty():
                 img_data = self.cameraStore.get_first_img_raw_from_queue()
@@ -61,11 +58,11 @@ class ImageProcessor:
 
             time.sleep(0.1)
 
-        logger.info("Image conversion and saving stopped.")
+        self.logger.info(f"{__class__.__name__}:Image conversion and saving stopped.")
 
 def image_processor_worker(system_store, stop_event):
     try:
         image_processor = ImageProcessor(system_store, stop_event)
         image_processor.run()
     except Exception as e:
-        logger.error(f"Error in image_processor_worker: {e}")
+        system_store.logger.error(f"Error in image_processor_worker: {e}")
