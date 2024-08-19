@@ -71,18 +71,6 @@ class GUI_Service:
     def update_gui(self):
         system_state = self.system_store.sysState.get_state()
 
-        # Update new image capture
-        if self.system_store.imgGUI.newImg:
-            self.system_store.imgGUI.set_newImg(False)
-
-            self.background_img = Image.fromarray(self.system_store.imgGUI.lastImg)
-            # Check if the image mode is RGBA and convert to RGB if necessary
-            if self.background_img.mode == 'RGBA':
-                self.background_img = self.background_img.convert('RGB')
-            self.background_img = self.background_img.resize((GUIConfig.WINDOW_WIDTH, GUIConfig.WINDOW_HEIGHT), Image.Resampling.LANCZOS)
-            self.background_img = ImageTk.PhotoImage(self.background_img)
-            self.bg_panel.config(image=self.background_img)
-
         # Update status label
         if system_state == SystemState.RUNNING:
             pass
@@ -125,10 +113,26 @@ class GUI_Service:
         # Schedule the next update
         self.parent.after(100, self.update_gui)
 
+    def update_picture(self):
+        # Update new image capture
+        if self.system_store.imgGUI.newImg:
+            self.system_store.imgGUI.set_newImg(False)
+
+            self.background_img = Image.fromarray(self.system_store.imgGUI.lastImg)
+            # Check if the image mode is RGBA and convert to RGB if necessary
+            if self.background_img.mode == 'RGBA':
+                self.background_img = self.background_img.convert('RGB')
+            self.background_img = self.background_img.resize((GUIConfig.WINDOW_WIDTH, GUIConfig.WINDOW_HEIGHT), Image.Resampling.LANCZOS)
+            self.background_img = ImageTk.PhotoImage(self.background_img)
+            self.bg_panel.config(image=self.background_img)
+        # Schedule the next update
+        self.parent.after(1, self.update_picture)
+
     def run(self):
         self.parent = tk.Tk()
         self.init_gui()
         self.update_gui()
+        self.update_picture()
         self.parent.mainloop()
 
 def gui_service_worker(system_store, stop_event):

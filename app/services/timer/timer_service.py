@@ -68,7 +68,7 @@ class TimerService:
             
             # idling time
             self.system_store.timer_idling.timer_ON(dt, 2000)
-            time.sleep(0.001)
+            time.sleep(self.system_store.THREAD_SLEEP_1US)
         return
 
 def timer_service_worker(system_store: SystemStore, stop_event: Event):

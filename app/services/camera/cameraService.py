@@ -110,7 +110,7 @@ class CameraController:
 
             self.auto_gain_adjustment()
 
-            time.sleep(0.01)
+            time.sleep(self.system_store.THREAD_SLEEP_1US)
 
         self.stop()
         self.system_store.cameraState.set_state(5)  # stop

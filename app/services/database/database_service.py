@@ -42,7 +42,7 @@ class Database_Service:
                     self.db_cursor.execute(statement, val)
                     self.sli_database.conn.commit()
                     self.logger.info(f"{__class__.__name__}:__" + statement)
-                time.sleep(0.001)
+            time.sleep(self.system_store.THREAD_SLEEP_1US)
 
         self.system_store.DataBaseState.set_state(5) # stop
         self.db_cursor.close()

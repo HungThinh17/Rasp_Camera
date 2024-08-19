@@ -50,13 +50,14 @@ class ImageProcessor:
             self.cameraStore.put_img_file_to_queue(image_data)
 
     def run(self):
-        self.logger.info(f"{__class__.__name__}:Starting image conversion and saving...")
+        self.logger.info(f"{__class__.__name__}:Start image processing service")
         while not self.stop_event.is_set():
-            if self.system_store.gps_captured_data.year_now != 0 and not self.cameraStore.is_img_raw_db_empty():
+            if not self.cameraStore.is_img_raw_db_empty():
+                self.logger.info(f"{__class__.__name__}:Saving image...")
                 img_data = self.cameraStore.get_first_img_raw_from_queue()
                 self.save_image_to_file(img_data)
-
-            time.sleep(0.1)
+                self.logger.info(f"{__class__.__name__}:Done!")
+            time.sleep(self.system_store.THREAD_SLEEP_1US)
 
         self.logger.info(f"{__class__.__name__}:Image conversion and saving stopped.")
 

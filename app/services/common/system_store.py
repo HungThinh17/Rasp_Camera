@@ -8,6 +8,9 @@ from services.gui.gui_param import GuiParams
 
 
 class SystemStore:
+    # Constants
+    THREAD_SLEEP_1US = 0.001
+
     def __init__(self):
         # instance variable
         self.lock = threading.Lock()
