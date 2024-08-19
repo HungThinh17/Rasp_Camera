@@ -1,0 +1,15 @@
+app/module/__pycache__/
+app/storeImages/
+app/__pycache__/
+app/services/__pycache__/
+app/services/camera/__pycache__/cameraService.cpython-311.pyc
+app/services/common/__pycache__/
+app/services/database/__pycache__/db_cam_parameter.cpython-311.pyc
+app/services/database/__pycache__/
+app/services/gui/__pycache__/
+app/services/camera/__pycache__/
+app/services/devTools/__pycache__/
+app/archives/logs/
+app/services/gps/__pycache__/
+app/services/image/__pycache__/
+app/services/timer/__pycache__/
