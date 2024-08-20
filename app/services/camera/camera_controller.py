@@ -27,21 +27,17 @@ class CameraController:
         self.still_config = None
         self.preview_config = None
         self.video_config = None
-        self.default_config = CameraConfig.PREVIEW
 
         self.init_config()
+        self.camera_config(CameraConfig.PREVIEW)
 
     def start(self):
-        # config = self.camera.create_still_configuration()
-        # self.camera.configure(config)
-        self.camera_config(CameraConfig.PREVIEW)
-        self.camera.start()
-        print(self.camera.camera_configuration())
+        if self.camera and not self.camera.started:
+            self.camera.start()
 
     def stop(self):
-        if self.camera:
+        if self.camera and self.camera.started:
             self.camera.stop()
-            self.camera = None
 
     def init_config(self):
         self.still_config = self.camera.create_still_configuration()
@@ -64,15 +60,21 @@ class CameraController:
             self.start()
 
     def update_controls(self):
-        self.camera.set_controls({"AnalogueGain": self.camera_requests["AnalogueGain"]})
+        if self.camera_requests["AnalogueGain"] != None:
+            self.camera.set_controls({"AnalogueGain": self.camera_requests["AnalogueGain"]})
+            self.camera_requests["AnalogueGain"] = None
         pass
 
-    def capture_image(self, camera_config: CameraConfig = None):
-        if camera_config  != None:
-            self.camera_config(camera_config)
-            
+    def capture_image(self):
+        if self.camera_requests['config']  != None:
+            self.camera_config(self.camera_requests['config'])
+
         image_arr = self.camera.capture_array()
         self.camera_data_queue.put(image_arr)
+
+        if self.camera_requests['config']  != None:
+            self.camera_config(CameraConfig.PREVIEW) # return to default capture config.
+            self.camera_requests['config'] = None
 
     def run(self):
         while True:

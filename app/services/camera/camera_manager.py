@@ -1,6 +1,7 @@
 import time
+from threading import Lock
 from multiprocessing import Queue, Process, Manager
-from services.camera.camera_controller import CameraRequests
+from services.camera.camera_controller import CameraConfig, CameraRequests
 
 class CameraManager:
     CAMERA_INITIALIZE_TIME = 1 # seconds
@@ -9,6 +10,7 @@ class CameraManager:
         self.camera_queue = Queue()
         self.camera_requests = Manager().dict()
         self.camera_process = None
+        self.request_capture = Lock()
 
         self.camera_requests[CameraRequests.START] = False
         self.camera_requests[CameraRequests.STOP] = False
@@ -29,9 +31,17 @@ class CameraManager:
             self.camera_process.join()
             self.camera_process = None
 
-    def capture_image(self):
-        self.camera_requests[CameraRequests.CAPTURE] = True
-        return self.camera_queue.get()
+    def capture_preview_image(self):
+        with self.request_capture:
+            self.camera_requests['config'] = CameraConfig.PREVIEW
+            self.camera_requests[CameraRequests.CAPTURE] = True
+            return self.camera_queue.get()
+    
+    def capture_still_image(self):
+        with self.request_capture:
+            self.camera_requests['config'] = CameraConfig.STILL
+            self.camera_requests[CameraRequests.CAPTURE] = True
+            return self.camera_queue.get()
 
     def update_controls(self, analog_gain):
         self.camera_requests['AnalogGain'] = analog_gain

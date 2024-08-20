@@ -9,6 +9,7 @@ class CameraStore:
         self.img_raw_queue: "Queue[RawImageData]" = Queue()
         self.img_file_queue: "Queue[FileImageData]" = Queue()
         self.gain_sample_img = Queue()
+        self.get_preview_img = None
 
     # Handle for RawImageDb
     #===========================

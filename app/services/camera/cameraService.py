@@ -24,6 +24,7 @@ class CameraService:
         self.stop_event = stop_event
         self.logger = system_store.logger
         self.camera_manager = CameraManager()
+        self.system_store.camear_store.get_preview_img = self.camera_manager.capture_preview_image
 
         self.pid = PID(PID_KP, PID_KI, PID_KD, setpoint=PID_SETPOINT)
         self.pid.output_limits = (1, 200)
@@ -35,10 +36,11 @@ class CameraService:
             self.logger.info(f"{__class__.__name__}:Capturing image...")
             start_time = time.perf_counter()
 
-            image_arr = self.camera_manager.capture_image()
-            self.system_store.imgGUI.set_lastImg(image_arr)
-            self.system_store.imgGUI.set_newImg(True)
+            # image_arr = self.camera_manager.capture_image()
+            # self.system_store.imgGUI.set_lastImg(image_arr)
+            # self.system_store.imgGUI.set_newImg(True)
 
+            image_arr = self.camera_manager.capture_still_image()
             gps_captured_data = self.system_store.get_gps_captured_data()
             img_raw_data = RawImageData(image_arr, gps_captured_data)
             self.camera_store.put_img_raw_to_queue(img_raw_data)
