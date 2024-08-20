@@ -7,7 +7,7 @@ from services.common.system_store import SystemStore
 class Database_Service:
     def __init__(self, system_store: SystemStore, stop_event: Event, sli_database: MySliDatabase):
         self.system_store = system_store
-        self.camera_store: CameraStore = system_store.camear_store
+        self.camera_store: CameraStore = system_store.camera_store
         self.stop_event = stop_event
         self.sli_database = sli_database
         self.db_cursor = None

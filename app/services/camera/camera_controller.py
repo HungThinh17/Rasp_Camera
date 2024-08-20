@@ -23,6 +23,7 @@ class CameraController:
 
         self.camera_requests = camera_requests
         self.camera_data_queue = camera_data_queue
+        self.default_config = CameraConfig.PREVIEW
 
         self.still_config = None
         self.preview_config = None
@@ -43,6 +44,9 @@ class CameraController:
         self.still_config = self.camera.create_still_configuration()
         self.preview_config = self.camera.create_preview_configuration()
         self.video_config = self.camera.create_video_configuration()
+
+    def set_default_config(self, config: CameraConfig):
+        self.default_config = config
 
     def camera_config(self, camera_config: CameraConfig):
         memoi = self.camera.started
@@ -66,14 +70,14 @@ class CameraController:
         pass
 
     def capture_image(self):
-        if self.camera_requests['config']  != None:
+        if self.camera_requests['config']  != self.default_config:
             self.camera_config(self.camera_requests['config'])
 
         image_arr = self.camera.capture_array()
         self.camera_data_queue.put(image_arr)
 
-        if self.camera_requests['config']  != None:
-            self.camera_config(CameraConfig.PREVIEW) # return to default capture config.
+        if self.camera_requests['config']  != self.default_config:
+            self.camera_config(self.default_config) # return to default capture config.
             self.camera_requests['config'] = None
 
     def run(self):

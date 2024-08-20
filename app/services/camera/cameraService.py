@@ -19,12 +19,12 @@ tuning = Picamera2.load_tuning_file("imx477.json")
 
 class CameraService:
     def __init__(self, system_store: SystemStore, stop_event: Event):
-        self.camera_store = system_store.camear_store
+        self.camera_store = system_store.camera_store
         self.system_store = system_store
         self.stop_event = stop_event
         self.logger = system_store.logger
         self.camera_manager = CameraManager()
-        self.system_store.camear_store.get_preview_img = self.camera_manager.capture_preview_image
+        self.camera_store.get_preview_img = self.camera_manager.capture_preview_image
 
         self.pid = PID(PID_KP, PID_KI, PID_KD, setpoint=PID_SETPOINT)
         self.pid.output_limits = (1, 200)

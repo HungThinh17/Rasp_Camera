@@ -15,7 +15,7 @@ class ImageProcessor:
     def __init__(self, system_store: SystemStore, stop_event):
         self.system_store = system_store
         self.stop_event: Event = stop_event
-        self.cameraStore: CameraStore = system_store.camear_store
+        self.cameraStore: CameraStore = system_store.camera_store
         self.logger = system_store.logger
 
     def save_image_to_file(self, img_data):

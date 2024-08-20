@@ -26,7 +26,7 @@ class SystemStore:
         self.ImuState = dbDeviceState()
         self.DataBaseState = dbDeviceState()
         self.gps_captured_data = GPSCaptureData()
-        self.camear_store = CameraStore()
+        self.camera_store = CameraStore()
 
         self.camera_ctrl_signal = False
         self.camera_status_signal = False
