@@ -22,7 +22,7 @@ removeDependencies:
 
 debug:
 	ssh $(USER)@$(ADDRESS) "sudo chmod -R 777 /dev/serial0"
-	ssh -L 5678:localhost:5678 $(USER)@$(ADDRESS) "DISPLAY=:10 python $(MOUNTPOINT)/$(APP) --debug" || true
+	ssh -L 5678:localhost:5678 -L 8000:localhost:8000 $(USER)@$(ADDRESS) "DISPLAY=:10 python $(MOUNTPOINT)/$(APP) --debug" || true
 
 manualProfiling:
 	ssh $(USER)@$(ADDRESS) "sudo rm -rf /mnt/app/profilings"
