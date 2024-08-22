@@ -22,7 +22,7 @@ class ImageProcessor:
         with Profiler(function_call="saveToFileStoreToDb"):
             current_date = datetime.now(timezone.utc)
             dirname1 = current_date.strftime("%Y%m%d")
-            dirname2 = f"{img_data.img_hour:02d}{img_data.img_min:02d}{img_data.img_sec:02d}{img_data.img_msec:0f}"
+            dirname2 = f"{img_data.img_hour:02d}{img_data.img_min:02d}{img_data.img_sec:02d}{img_data.img_msec:03.0f}"
             filename = f"{dirname1}{dirname2}"
 
             image_dir = os.path.join(IMAGES_DIR, dirname1)
@@ -45,6 +45,7 @@ class ImageProcessor:
                 img_data.img_lon,
                 img_data.img_alt,
                 img_data.img_numSat,
+                image_path
             )
 
             self.cameraStore.put_img_file_to_queue(image_data)

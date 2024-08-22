@@ -1,9 +1,10 @@
 import os
 import time
 import tkinter as tk
-from PIL import Image, ImageTk
-from threading import Event
-from tkinter import Toplevel
+from typing import List
+from PIL import Image, ImageTk, ImageFile
+from threading import Event, Thread
+from services.image.img_filedata import FileImageData
 from services.common.system_status import SystemState
 from services.common.system_store import SystemStore
 from services.gui.guiPanel import GUIPanel
@@ -13,8 +14,7 @@ from services.gui.guiNotification import GUINotification
 
 class GUI_Service:
     INITIALIZE_TIME = 3 # seconds
-    SCAN_UPDATE_GUI_INTERVAL = 100 # miliseconds
-    SCAN_UPDATE_PREIVEW_IMAGE = 10 # miliseconds
+    SCAN_UPDATE_GUI_INTERVAL = 10 # miliseconds
     NOTIFICATION_DURATION = 1000 # milliseconds
 
     def __init__(self, system_store: SystemStore, stop_event: Event):
@@ -28,6 +28,10 @@ class GUI_Service:
         self.bg_panel = None
         self.gui_widget = None
         self.notification = None
+
+        self.preview_mode = False
+        self.available_images: List[FileImageData] = None
+        self.current_image_idx = 0
 
     def stop_service(self):
         self.parent.quit()
@@ -48,6 +52,7 @@ class GUI_Service:
 
         # Create the notification channel
         self.notification = GUINotification(self.parent)
+        self.preview_mode = False
 
     def create_main_widget(self):
         # Create a GUIWidget instance to manage GUI components
@@ -55,23 +60,38 @@ class GUI_Service:
 
         # Add labels
         self.gui_widget.add_label("lbStatus", "Initializing", width=500, bg="gold", fg="black", x=0, y=0)
-        self.gui_widget.add_label("lbInfo", "Time: \nLat: \nLon: \nAlt: \nSatellite: \nSpeed: ", anchor="w", justify=tk.LEFT, bg="black", fg="lime", x=0, y=20)
+        self.gui_widget.add_label("lbInfo", "Time: \nLat: \nLon: \nAlt: \nSatellite: \nSpeed: ", anchor="w", justify=tk.LEFT, bg="dim gray", fg="lime", x=0, y=25)
 
         # Add buttons
         self.gui_widget.add_button(
             "btExit", "Exit", self.handle_exit_button_click, \
             bg="red", fg="white", height=1, width=3, \
-            x=GUIConfig.WINDOW_WIDTH - 50, y=0
+            x=GUIConfig.WINDOW_WIDTH - 60, y=25
         )
         self.gui_widget.add_button(
             "btCapture", "Capture", self.handle_capture_button_click, \
             bg="lime", fg="black", height=3, width=10, \
-            x=GUIConfig.WINDOW_WIDTH - 260, y=GUIConfig.WINDOW_HEIGHT - 65
+            x=GUIConfig.WINDOW_WIDTH - 390, y=GUIConfig.WINDOW_HEIGHT - 65
         )
         self.gui_widget.add_button(
             "btStream", "Stream", self.handle_stream_button_click, \
             bg="lime", fg="black", height=3, width=10, \
+            x=GUIConfig.WINDOW_WIDTH - 260, y=GUIConfig.WINDOW_HEIGHT - 65
+        )
+        self.gui_widget.add_button(
+            "btPreview", "Preview", self.handle_preview_button_click, \
+            bg="lime", fg="black", height=3, width=10, \
             x=GUIConfig.WINDOW_WIDTH - 130, y=GUIConfig.WINDOW_HEIGHT - 65
+        )
+        self.gui_widget.add_button(
+            "btPrevious", "◀", self.handle_previous_button_click, \
+            fg="black", bg='gray25', height=1, width=3, relief=tk.FLAT, \
+            x=GUIConfig.WINDOW_WIDTH - 130, y=GUIConfig.WINDOW_HEIGHT - 100
+        )
+        self.gui_widget.add_button(
+            "btNext", "▶", self.handle_next_button_click, \
+            fg="black", bg='gray25', height=1, width=3, relief=tk.FLAT, \
+            x=GUIConfig.WINDOW_WIDTH - 60, y=GUIConfig.WINDOW_HEIGHT - 100
         )
         self.gui_widget.add_button(
             "btIdling", "Idling", self.handle_idling_button_click, \
@@ -86,16 +106,44 @@ class GUI_Service:
     def handle_capture_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_capture_single(True)
         self.logger.info(f"{__class__.__name__}: Capture button clicked, setting capture single mode")
-        self.notification.show("Capture button clicked")
+        self.notification.show("Start capturing...")
 
     def handle_stream_button_click(self):
         self.system_store.camera_store.request_streamer['run'] = not self.system_store.camera_store.request_streamer['run']
         if self.system_store.camera_store.request_streamer['run']:
             self.logger.info(f"{__class__.__name__}: Stream button clicked, start streaming ...")
-            self.notification.show("Stream started")
+            self.notification.show("Start streaming...")
         else:
             self.logger.info(f"{__class__.__name__}: Stream button clicked, stop streaming !")
-            self.notification.show("Stream stopped")
+            self.notification.show("Stop streaming...")
+        
+    def handle_preview_button_click(self):
+        if self.preview_mode:       # Toggle off
+            self.init_gui()
+        else:                       # Toggle on
+            self.load_preview_mode()
+        # load image
+        
+        self.logger.info(f"{__class__.__name__}: Preview button clicked")
+        self.notification.show("Preview Images.")
+
+    def handle_previous_button_click(self):
+        if self.current_image_idx > 0:
+            self.current_image_idx -= 1
+            self.load_and_display_preview_image(self.available_images[self.current_image_idx].file_path)
+            self.notification.show(f'Displaying image: {self.available_images[self.current_image_idx].imgID}')
+        else:
+            self.notification.show("No more images to display.")
+        self.logger.info(f"{__class__.__name__}: Previous button clicked")
+
+    def handle_next_button_click(self):
+        if self.current_image_idx < len(self.available_images) - 1:
+            self.current_image_idx += 1
+            self.load_and_display_preview_image(self.available_images[self.current_image_idx].file_path)
+            self.notification.show(f'Displaying image: {self.available_images[self.current_image_idx].imgID}')
+        else:
+            self.notification.show("No more images to display.")
+        self.logger.info(f"{__class__.__name__}: Next button clicked")
 
     def handle_idling_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_Idling_cmd(not self.system_store.imgGUI.btn_GUI_Idling_cmd)
@@ -151,22 +199,38 @@ class GUI_Service:
 
         if self.stop_event.is_set():
             self.parent.quit()
+        
+        self.parent.after(self.SCAN_UPDATE_GUI_INTERVAL, self.update_gui)
 
-    def update_picture(self):
-        # Update new image capture
-        if self.system_store.imgGUI.newImg:
-            self.system_store.imgGUI.set_newImg(False)
-            self.background_img = Image.fromarray(self.system_store.imgGUI.lastImg)
-            # Check if the image mode is RGBA and convert to RGB if necessary
-            if self.background_img.mode == 'RGBA':
-                self.background_img = self.background_img.convert('RGB')
-            self.background_img = ImageTk.PhotoImage(self.background_img)
-            self.bg_panel.config(image=self.background_img)
+    def load_preview_mode(self):
+        self.preview_mode = True
+        self.load_images_from_db()
+        self.current_image_idx = 0 # reset index
+        if not self.available_images:
+            self.logger.info(f"{__class__.__name__}: Preview button clicked, but no available images")
+            self.notification.show("No available images")
+            return
+        self.load_and_display_preview_image(self.available_images[self.current_image_idx].file_path)
+        self.notification.show(f'Displaying image: {self.available_images[self.current_image_idx].imgID}')
+
+
+    def load_images_from_db(self):
+        self.available_images = self.system_store.sli_database.get_all_items_as_img_data()
+
+    def load_and_display_preview_image(self, image_path):
+        def load_image(self, image_path):
+            ImageFile.LOAD_TRUNCATED_IMAGES = True
+            with Image.open(image_path) as img:
+                size = (GUIConfig.WINDOW_WIDTH, GUIConfig.WINDOW_HEIGHT)
+                img.thumbnail(size, Image.Resampling.LANCZOS)
+                self.background_img = ImageTk.PhotoImage(img)
+                self.bg_panel.config(image=self.background_img)
+        Thread(target=load_image, args=(self, image_path,)).start()
+
 
     def run(self):
         self.init_gui()
-        self.parent.after(self.SCAN_UPDATE_GUI_INTERVAL, self.update_gui)
-        self.parent.after(self.SCAN_UPDATE_PREIVEW_IMAGE, self.update_picture)
+        self.update_gui()
         self.parent.mainloop()
 
 def gui_service_worker(system_store, stop_event):

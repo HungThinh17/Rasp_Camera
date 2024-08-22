@@ -13,8 +13,8 @@ class GUIWidget:
         label.place(x=x, y=y)
         self.widgets[name] = label
 
-    def add_button(self, name, text, command, bg=None, fg=None, height=None, width=None, x=None, y=None,):
-        button = GUIButton(self.parent, text, command, bg=bg, fg=fg, height=height, width=width)
+    def add_button(self, name, text, command, bg=None, fg=None, height=None, width=None, x=None, y=None, relief=None):
+        button = GUIButton(self.parent, text, command, bg=bg, fg=fg, height=height, width=width, relief=relief)
         if x is not None and y is not None:
             button.place(x=x, y=y)
         self.widgets[name] = button
