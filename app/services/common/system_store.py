@@ -1,4 +1,5 @@
 import threading
+from services.database.my_sql_database import MySliDatabase
 from services.camera.camera_store import CameraStore
 from services.gps.gps_data import GPSCaptureData
 from services.camera.cam_parameter import dbCamPara
@@ -25,8 +26,10 @@ class SystemStore:
         self.GpsState = dbDeviceState()
         self.ImuState = dbDeviceState()
         self.DataBaseState = dbDeviceState()
+
         self.gps_captured_data = GPSCaptureData()
         self.camera_store = CameraStore()
+        self.sli_database = MySliDatabase()
 
         self.camera_ctrl_signal = False
         self.camera_status_signal = False

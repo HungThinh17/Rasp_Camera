@@ -10,7 +10,7 @@ class KeyboardController:
         self.stop_event = self.shared_obj[SharedKey.STOP_EVENT]
 
     def run(self):
-        while not self.stop_event:
+        while not self.stop_event.is_set():
             # check keyboard input
             kb = keyboard.read_key()
             self.system_store.set_kbCtrl(kb)

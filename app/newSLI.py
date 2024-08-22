@@ -45,7 +45,6 @@ class System:
 
         # Create a shared dictionary to store the database connection
         self.system_store: SystemStore = None
-        self.sli_database: MySliDatabase = None
         self.stop_event = Event()
 
     def initialize_system(self):
@@ -55,8 +54,6 @@ class System:
         self.system_store = SystemStore()
         self.system_store.logger = Logger(os.path.join(os.getcwd(), "archives/logs"), "sli_image.log").get_logger()
         self.logger = self.system_store.logger
-
-        self.sli_database = MySliDatabase()
 
         self.system_store.set_cpu_serial(self.getserial())
         self.system_store.sysState.set_state(SystemState.INIT)  # init
@@ -84,7 +81,7 @@ class System:
         self.threads.append(gui_thread)
 
         # Thread: input database
-        data_thread = Thread(name='Database Service', target=database_service_worker, args=(self.system_store, self.stop_event, self.sli_database))
+        data_thread = Thread(name='Database Service', target=database_service_worker, args=(self.system_store, self.stop_event))
         self.threads.append(data_thread)
 
         # capture camera

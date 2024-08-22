@@ -45,25 +45,28 @@ class MySliDatabase:
             else:
                 create_table_sql = f"""
                 CREATE TABLE {self.db_table_name} (
-                deviceID varchar(255),
-                imgID varchar(255),
-                date varchar(255),
-                time varchar(255),
-                lat varchar(255),
-                lon varchar(255),
-                alt varchar(255),
-                numSat varchar(255),
-                PRIMARY KEY (imgID)
-                )
-                """
+                    deviceID varchar(255),
+                    imgID varchar(255),
+                    date varchar(255),
+                    time varchar(255),
+                    lat varchar(255),
+                    lon varchar(255),
+                    alt varchar(255),
+                    numSat varchar(255),
+                    file_path varchar(255),
+                    PRIMARY KEY (imgID)
+                )"""
                 cur.execute(create_table_sql)
                 print(f"Table {self.db_table_name} created successfully")
 
     def add_item_to_database(self, image_data: FileImageData):
-        statement = f"INSERT INTO {self.db_table_name} (deviceID, imgID, date, time, lat, lon, alt, numSat) VALUES (%s,%s,%s,%s,%s,%s,%s,%s);"
+        statement = f"\
+            INSERT INTO {self.db_table_name} \
+                (deviceID, imgID, date, time, lat, lon, alt, numSat, file_path) \
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s);"
         val = (
-            image_data.deviceID, image_data.imgID, image_data.imgDate,
-            image_data.imgTime, image_data.lat, image_data.lon, image_data.alt, image_data.numSat
+            image_data.deviceID, image_data.imgID, image_data.imgDate, image_data.imgTime, 
+            image_data.lat, image_data.lon, image_data.alt, image_data.numSat, image_data.file_path
         )
         with self.conn.cursor() as cursor:
             cursor.execute(statement, val)
@@ -78,14 +81,17 @@ class MySliDatabase:
             lat=row['lat'],
             lon=row['lon'],
             alt=row['alt'],
-            numSat=row['numSat']
+            numSat=row['numSat'],
+            file_path=row['file_path']
         )
 
     def get_all_items_as_img_data(self):
+        result = []
         with self.conn.cursor() as cursor:
             cursor.execute(f"SELECT * FROM {self.db_table_name}")
             for row in cursor.fetchall():
-                yield self.row_to_img_data(row)
+                result.append(self.row_to_img_data(row))
+        return result
 
     def remove_item(self, img_id):
         with self.conn.cursor() as cursor:
