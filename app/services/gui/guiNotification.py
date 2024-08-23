@@ -1,7 +1,7 @@
 import tkinter as tk
 
 class GUINotification:
-    def __init__(self, parent, duration=1000):
+    def __init__(self, parent, duration=2000):
         self.parent = parent
         self.duration = duration
 

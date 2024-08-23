@@ -11,6 +11,7 @@ from services.gui.gui_param import GuiParams
 class SystemStore:
     # Constants
     THREAD_SLEEP_1US = 0.001
+    THREAD_SLEEP_10US = 0.01
 
     def __init__(self):
         # instance variable

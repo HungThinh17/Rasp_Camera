@@ -50,6 +50,15 @@ class ImageProcessor:
 
             self.cameraStore.put_img_file_to_queue(image_data)
 
+    def clear_images_directory(self):
+        for root, dirs, files in os.walk(IMAGES_DIR, topdown=False):
+            for file in files:
+                os.remove(os.path.join(root, file))
+            for dir in dirs:
+                os.rmdir(os.path.join(root, dir))
+        
+        print(f"All contents of {IMAGES_DIR} have been removed.")
+
     def run(self):
         self.logger.info(f"{__class__.__name__}:Start image processing service")
         while not self.stop_event.is_set():
@@ -58,6 +67,12 @@ class ImageProcessor:
                 img_data = self.cameraStore.get_first_img_raw_from_queue()
                 self.save_image_to_file(img_data)
                 self.logger.info(f"{__class__.__name__}:Done!")
+
+            if self.system_store.imgGUI.btn_GUI_clean:
+                self.system_store.imgGUI.set_btn_GUI_clean(False)
+                self.clear_images_directory()
+                self.system_store.sli_database.remove_all_items()
+            
             time.sleep(self.system_store.THREAD_SLEEP_1US)
 
         self.logger.info(f"{__class__.__name__}:Image conversion and saving stopped.")

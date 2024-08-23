@@ -24,6 +24,7 @@ class GUI_Service:
         self.logger = system_store.logger
 
         # Gui elements
+        self.default_bg_img_path = os.path.join(os.getcwd(), "Digime.jpeg")
         self.background_img = None
         self.bg_panel = None
         self.gui_widget = None
@@ -43,16 +44,14 @@ class GUI_Service:
         self.logger.info(f"{__class__.__name__}: Window created with title: {GUIConfig.WINDOW_TITLE} and geometry: {GUIConfig.WINDOW_WIDTH}x{GUIConfig.WINDOW_HEIGHT}")
 
         # Create the background panel
-        image_path = os.path.join(os.getcwd(), "Digime.jpeg")
-        self.bg_panel = GUIPanel(self.parent, image_path, width=GUIConfig.WINDOW_WIDTH, height=GUIConfig.WINDOW_HEIGHT)
-        self.bg_panel.place(x=0, y=0)
+        self.bg_panel = GUIPanel(self.parent, self.default_bg_img_path, width=GUIConfig.WINDOW_WIDTH, height=GUIConfig.WINDOW_HEIGHT)
+        # self.bg_panel.place(x=0, y=0)
 
         # Create the main widget
         self.create_main_widget()
 
         # Create the notification channel
         self.notification = GUINotification(self.parent)
-        self.preview_mode = False
 
     def create_main_widget(self):
         # Create a GUIWidget instance to manage GUI components
@@ -67,6 +66,11 @@ class GUI_Service:
             "btExit", "Exit", self.handle_exit_button_click, \
             bg="red", fg="white", height=1, width=3, \
             x=GUIConfig.WINDOW_WIDTH - 60, y=25
+        )
+        self.gui_widget.add_button(
+            "btAuto", "Clean", self.handle_clean_button_click, \
+            bg="lime", fg="black", height=3, width=10, \
+            x=GUIConfig.WINDOW_WIDTH - 650, y=GUIConfig.WINDOW_HEIGHT - 65
         )
         self.gui_widget.add_button(
             "btAuto", "Auto", self.handle_auto_button_click, \
@@ -108,11 +112,16 @@ class GUI_Service:
         self.system_store.imgGUI.set_btn_GUI_capture_auto(True)
         self.logger.info(f"{__class__.__name__}: Background image button clicked, setting capture auto mode")
 
+    def handle_clean_button_click(self):
+        self.system_store.imgGUI.set_btn_GUI_clean(True)
+        self.logger.info(f"{__class__.__name__}: Clean button clicked")
+        self.notification.show("Start clean data table...")
+
     def handle_auto_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_capture_auto(
             not self.system_store.imgGUI.btn_GUI_capture_auto #  toggle
         )
-        self.logger.info(f"{__class__.__name__}: Auto button clicked, setting capture single mode")
+        self.logger.info(f"{__class__.__name__}: Auto button clicked, setting capture auto mode")
         self.notification.show("Start auto capturing...")
 
     def handle_capture_button_click(self):
@@ -131,8 +140,10 @@ class GUI_Service:
         
     def handle_preview_button_click(self):
         if self.preview_mode:       # Toggle off
-            self.init_gui()
-        else:                       # Toggle on
+            self.preview_mode = False
+            self.bg_panel.reset_to_default()
+        else:                       # Toggle on 
+            self.preview_mode = True
             self.load_preview_mode()
         # load image
         
@@ -217,7 +228,6 @@ class GUI_Service:
         self.parent.after(self.SCAN_UPDATE_GUI_INTERVAL, self.update_gui)
 
     def load_preview_mode(self):
-        self.preview_mode = True
         self.load_images_from_db()
         self.current_image_idx = 0 # reset index
         if not self.available_images:
@@ -231,15 +241,15 @@ class GUI_Service:
     def load_images_from_db(self):
         self.available_images = self.system_store.sli_database.get_all_items_as_img_data()
 
-    def load_and_display_preview_image(self, image_path):
-        def load_image(self, image_path):
+    def load_and_display_preview_image(self, image_path, size=(500, 500)):
+        def load_image(self, image_path, size):
             ImageFile.LOAD_TRUNCATED_IMAGES = True
             with Image.open(image_path) as img:
-                size = (GUIConfig.WINDOW_WIDTH, GUIConfig.WINDOW_HEIGHT)
+                size = size
                 img.thumbnail(size, Image.Resampling.LANCZOS)
                 self.background_img = ImageTk.PhotoImage(img)
                 self.bg_panel.config(image=self.background_img)
-        Thread(target=load_image, args=(self, image_path,)).start()
+        Thread(target=load_image, args=(self, image_path, size)).start()
 
 
     def run(self):
