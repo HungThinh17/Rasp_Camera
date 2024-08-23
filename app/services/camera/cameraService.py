@@ -58,16 +58,15 @@ class CameraService:
             )
 
     def auto_gain_adjustment(self):
-        if not self.camera_store.check_gain_sample_img_empty():
-            last_img = self.camera_store.get_gain_sample_img()
-            grey_brightness = self.image_brightness_grey(last_img)
-            self.system_store.set_last_img_grey_brightness(grey_brightness)
+        last_img = self.camera_store.get_gain_sample_img()
+        grey_brightness = self.image_brightness_grey(last_img)
+        self.system_store.set_last_img_grey_brightness(grey_brightness)
 
-            new_gain = self.pid(grey_brightness)
-            self.system_store.camPara.set_analog_gain(new_gain)
-            self.system_store.camPara.set_update()
+        new_gain = self.pid(grey_brightness)
+        self.system_store.camPara.set_analog_gain(new_gain)
+        self.system_store.camPara.set_update()
 
-            self.logger.info(f"{__class__.__name__}: Brightness: {grey_brightness}, Gain: {new_gain}")
+        self.logger.info(f"{__class__.__name__}: Brightness: {grey_brightness}, Gain: {new_gain}")
 
     def image_brightness_grey(self, img: np.ndarray) -> float:
         roi = img[:4056, 1216:3040, :]  # 1216 = 3040*2/5
@@ -98,7 +97,16 @@ class CameraService:
                 self.capture_image()
                 self.system_store.clear_camera_ctrl_signal()
 
-            self.auto_gain_adjustment()
+            if self.system_store.camera_store.request_streamer['run']:
+                self.camera_manager.set_capture_mode(CameraManager.CaptureMode.STREAMING)
+
+            if self.system_store.imgGUI.btn_GUI_capture_auto:
+                self.camera_manager.set_capture_mode(CameraManager.CaptureMode.COLLECTING)
+                while self.system_store.imgGUI.btn_GUI_capture_auto:
+                    self.capture_image()
+
+            if not self.camera_store.check_gain_sample_img_empty():
+                self.auto_gain_adjustment()
 
             time.sleep(self.system_store.THREAD_SLEEP_1US)
 

@@ -69,6 +69,11 @@ class GUI_Service:
             x=GUIConfig.WINDOW_WIDTH - 60, y=25
         )
         self.gui_widget.add_button(
+            "btAuto", "Auto", self.handle_auto_button_click, \
+            bg="lime", fg="black", height=3, width=10, \
+            x=GUIConfig.WINDOW_WIDTH - 520, y=GUIConfig.WINDOW_HEIGHT - 65
+        )
+        self.gui_widget.add_button(
             "btCapture", "Capture", self.handle_capture_button_click, \
             bg="lime", fg="black", height=3, width=10, \
             x=GUIConfig.WINDOW_WIDTH - 390, y=GUIConfig.WINDOW_HEIGHT - 65
@@ -102,6 +107,13 @@ class GUI_Service:
     def handle_bg_image_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_capture_auto(True)
         self.logger.info(f"{__class__.__name__}: Background image button clicked, setting capture auto mode")
+
+    def handle_auto_button_click(self):
+        self.system_store.imgGUI.set_btn_GUI_capture_auto(
+            not self.system_store.imgGUI.btn_GUI_capture_auto #  toggle
+        )
+        self.logger.info(f"{__class__.__name__}: Auto button clicked, setting capture single mode")
+        self.notification.show("Start auto capturing...")
 
     def handle_capture_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_capture_single(True)
@@ -179,6 +191,7 @@ class GUI_Service:
 
         # Update time, location, and satellite information
         captured_time = self.system_store.get_gps_captured_data()
+        number_of_captured_images = self.system_store.sli_database.get_number_of_items()
         time_str = "{:02d}-{:02d}-{:04d} {:02d}:{:02d}:{:02d}".format(
             captured_time.day_now,
             captured_time.month_now,
@@ -193,7 +206,8 @@ class GUI_Service:
             f"Lon: {captured_time.lon_now:.6f}\n"
             f"Alt: {captured_time.alt_now}\n"
             f"Satellite: {captured_time.numsat_now}\n"
-            f"Speed: {captured_time.speed_now:.2f} Km/h"
+            f"Speed: {captured_time.speed_now:.2f} Km/h\n"
+            f"Captured Images: {number_of_captured_images}"
         )
         self.gui_widget.config("lbInfo", text=info_text)
 

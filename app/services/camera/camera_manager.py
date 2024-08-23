@@ -1,10 +1,15 @@
 import time
+from enum import Enum
 from threading import Lock
 from multiprocessing import Queue, Process, Manager
 from services.camera.camera_controller import CameraConfig, CameraRequests
 
 class CameraManager:
     CAMERA_INITIALIZE_TIME = 1 # seconds
+
+    class CaptureMode(Enum):
+        COLLECTING = 1
+        STREAMING = 2
 
     def __init__(self):
         self.camera_queue = Queue()
@@ -16,6 +21,7 @@ class CameraManager:
         self.camera_requests[CameraRequests.STOP] = False
         self.camera_requests[CameraRequests.CAPTURE] = False
         self.camera_requests[CameraRequests.UPDATE_CONTROLS] = False
+        self.camera_requests[CameraRequests.UPDATE_CONFIG] = False
 
     def start_camera_process(self, capture_process_worker):
         self.camera_process = Process(target=capture_process_worker, args=(self.camera_requests, self.camera_queue))
@@ -30,6 +36,13 @@ class CameraManager:
             self.camera_process.terminate()
             self.camera_process.join()
             self.camera_process = None
+
+    def set_capture_mode(self, mode:CaptureMode):
+        if mode == self.CaptureMode.COLLECTING:
+            self.camera_requests['config'] = CameraConfig.STILL
+        elif mode == self.CaptureMode.STREAMING:
+            self.camera_requests['config'] = CameraConfig.PREVIEW
+        self.camera_requests[CameraRequests.UPDATE_CONFIG] = True
 
     def capture_preview_image(self):
         with self.request_capture:

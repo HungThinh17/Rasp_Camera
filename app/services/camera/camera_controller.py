@@ -7,7 +7,8 @@ class CameraRequests(Enum):
     CAPTURE = 1
     STOP = 2
     UPDATE_CONTROLS = 3
-    RECORD = 4
+    UPDATE_CONFIG = 4
+    RECORD = 5
 
 class CameraConfig(Enum):
     STILL = 0
@@ -47,6 +48,7 @@ class CameraController:
 
     def set_default_config(self, config: CameraConfig):
         self.default_config = config
+        self.camera_config(config)
 
     def camera_config(self, camera_config: CameraConfig):
         memoi = self.camera.started
@@ -97,6 +99,11 @@ class CameraController:
             elif self.camera_requests[CameraRequests.UPDATE_CONTROLS]:
                 self.camera_requests[CameraRequests.UPDATE_CONTROLS] = False
                 self.update_controls()
+
+            elif self.camera_requests[CameraRequests.UPDATE_CONFIG]:
+                self.camera_requests[CameraRequests.UPDATE_CONFIG] = False
+                self.set_default_config(self.camera_requests['config'])
+
             else:
                 pass
 
