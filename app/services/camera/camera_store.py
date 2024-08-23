@@ -2,6 +2,7 @@ from queue import Queue
 from typing import TYPE_CHECKING
 from services.image.img_filedata import FileImageData
 from services.image.img_metadata import RawImageData
+import multiprocessing
 
 class CameraStore:
     # contructor
@@ -9,6 +10,10 @@ class CameraStore:
         self.img_raw_queue: "Queue[RawImageData]" = Queue()
         self.img_file_queue: "Queue[FileImageData]" = Queue()
         self.gain_sample_img = Queue()
+
+        self.get_preview_img = None
+        self.preview_image_queue = multiprocessing.Queue()
+        self.request_streamer = multiprocessing.Manager().dict()
 
     # Handle for RawImageDb
     #===========================

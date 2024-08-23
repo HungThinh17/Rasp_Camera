@@ -24,6 +24,14 @@ class Logger:
 
         log_file_path = os.path.join(self.log_dir, f"{self.log_file_name}.log")
 
+        # Check if the log file exists and delete it
+        if os.path.isfile(log_file_path):
+            try:
+                os.remove(log_file_path)
+                self.logger.info(f"Deleted existing log file: {log_file_path}")
+            except Exception as e:
+                self.logger.error(f"Error deleting log file: {e}")
+
         file_handler = RotatingFileHandler(log_file_path, maxBytes=self.max_bytes, backupCount=self.backup_count)
         file_handler.setFormatter(self.formatter)
         self.logger.addHandler(file_handler)

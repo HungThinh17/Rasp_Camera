@@ -34,7 +34,7 @@ from services.timer.timer_service import timer_service_worker
 from services.gps.gps_service import gps_service_worker
 from services.database.database_service import database_service_worker
 from services.gui.guiService import gui_service_worker
-from services.camera.cameraService import camera_controller_worker
+from services.camera.cameraService import camera_controller_worker, camera_feeding_preview_image
 from services.image.imageService import image_processor_worker
 
 class System:
@@ -45,7 +45,6 @@ class System:
 
         # Create a shared dictionary to store the database connection
         self.system_store: SystemStore = None
-        self.sli_database: MySliDatabase = None
         self.stop_event = Event()
 
     def initialize_system(self):
@@ -55,8 +54,6 @@ class System:
         self.system_store = SystemStore()
         self.system_store.logger = Logger(os.path.join(os.getcwd(), "archives/logs"), "sli_image.log").get_logger()
         self.logger = self.system_store.logger
-
-        self.sli_database = MySliDatabase()
 
         self.system_store.set_cpu_serial(self.getserial())
         self.system_store.sysState.set_state(SystemState.INIT)  # init
@@ -84,12 +81,16 @@ class System:
         self.threads.append(gui_thread)
 
         # Thread: input database
-        data_thread = Thread(name='Database Service', target=database_service_worker, args=(self.system_store, self.stop_event, self.sli_database))
+        data_thread = Thread(name='Database Service', target=database_service_worker, args=(self.system_store, self.stop_event))
         self.threads.append(data_thread)
 
         # capture camera
         camera_thread = Thread(name='Camera Service', target=camera_controller_worker, args=(self.system_store, self.stop_event))
         self.threads.append(camera_thread)
+
+        # capture camera
+        streamer_thread = Thread(name='Streamer Service', target=camera_feeding_preview_image, args=(self.system_store.camera_store, self.stop_event))
+        self.threads.append(streamer_thread)
 
         # save image array to file
         image_thread = Thread(name='Image Service', target=image_processor_worker, args=(self.system_store, self.stop_event))

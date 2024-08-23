@@ -19,16 +19,14 @@ class TimerService:
             dt = 1000 * (tn - tn1)
 
             # self.system_store.set_dt(dt)
-            time_data = self.system_store.get_gps_captured_data()
-            time_data.set_msec_now(time_data.get_msec_now() + dt)
+            msec_now = self.system_store.gps_captured_data.msec_now
+            self.system_store.gps_captured_data.set_msec_now(dt + msec_now)
             tn1 = tn
 
             # reset gps milisec
             if self.system_store.gps_captured_data.reset_msec:
                 self.system_store.gps_captured_data.set_msec_now(0)
                 self.system_store.gps_captured_data.set_reset_msec(False)
-            
-            self.system_store.set_gps_captured_data(time_data) # update milisecond
 
             # default pulse cycle 250 ms
             self.system_store.p250.pulse(dt, 125, 125)
@@ -68,7 +66,7 @@ class TimerService:
             
             # idling time
             self.system_store.timer_idling.timer_ON(dt, 2000)
-            time.sleep(0.001)
+            time.sleep(self.system_store.THREAD_SLEEP_1US)
         return
 
 def timer_service_worker(system_store: SystemStore, stop_event: Event):

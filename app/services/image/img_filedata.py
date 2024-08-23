@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from services.common.system_store import SystemStore
 
 class FileImageData:
-    def __init__(self, deviceID, imgID, imgDate, imgTime , lat, lon, alt, numSat) -> None:
+    def __init__(self, deviceID, imgID, imgDate, imgTime , lat, lon, alt, numSat, file_path) -> None:
         self.deviceID = deviceID
         self.imgID = imgID
         self.imgDate = imgDate
@@ -18,6 +18,7 @@ class FileImageData:
         self.lon = lon
         self.alt = alt
         self.numSat = numSat
+        self.file_path = file_path
 
     def set_deviceID(self, val):
         self.deviceID = val
@@ -50,3 +51,4 @@ class FileImageData:
     def set_numSat(self, val):
         self.numSat = val
         return
+    

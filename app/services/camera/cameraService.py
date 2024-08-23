@@ -1,13 +1,16 @@
-import logging
 import time
 import numpy as np
 from simple_pid import PID
 from picamera2 import Picamera2
-from typing import Tuple, Optional
 from threading import Event
+from multiprocessing import Queue, Manager, Process
 from services.devTools.profilingService import Profiler
 from services.common.system_store import SystemStore
 from services.image.img_metadata import RawImageData
+from services.camera.camera_manager import CameraManager
+from services.camera.camera_store import CameraStore
+from services.gui.image_streamer import ImageStreamer, image_streamer_worker
+from services.camera.camera_controller import capture_process_worker
 
 # PID controller parameters
 PID_KP = 0.02
@@ -17,45 +20,34 @@ PID_SETPOINT = 40  # Desired grayscale brightness value
 
 tuning = Picamera2.load_tuning_file("imx477.json")
 
-class CameraController:
+class CameraService:
     def __init__(self, system_store: SystemStore, stop_event: Event):
-        self.camera_store = system_store.camear_store
+        self.camera_store: CameraStore = system_store.camera_store
         self.system_store = system_store
         self.stop_event = stop_event
         self.logger = system_store.logger
+        self.camera_manager = CameraManager()
 
-        self.camera = None
+        self.camera_store.get_preview_img = self.camera_manager.capture_preview_image
+
         self.pid = PID(PID_KP, PID_KI, PID_KD, setpoint=PID_SETPOINT)
         self.pid.output_limits = (1, 200)
         self.pid.proportional_on_measurement = True
         self.pid.sample_time = 0.01
 
-    def start(self):
-        self.camera = Picamera2(tuning=tuning)
-        config = self.camera.create_still_configuration()
-        self.camera.configure(config)
-        # TODO - this might caused the camera capture slower !!
-        # self.camera.set_controls({"ExposureTime": self.system_store.camPara.ExposureTime, "AnalogueGain": self.system_store.camPara.AnalogGain})
-        self.camera.start()
-        self.logger.info(f"{__class__.__name__}:Camera initialized and ready for capture.")
-
-    def stop(self):
-        self.camera.stop()
-        self.camera = None
-        self.logger.info(f"{__class__.__name__}:Camera stopped.")
-
-    def capture_image(self) -> Optional[Tuple[np.ndarray, float]]:
+    def capture_image(self):
         with Profiler(function_call="captureImage"):
             self.logger.info(f"{__class__.__name__}:Capturing image...")
             start_time = time.perf_counter()
-            image_arr = self.camera.capture_array()
 
+            # image_arr = self.camera_manager.capture_image()
+            # self.system_store.imgGUI.set_lastImg(image_arr)
+            # self.system_store.imgGUI.set_newImg(True)
+
+            image_arr = self.camera_manager.capture_still_image()
             gps_captured_data = self.system_store.get_gps_captured_data()
             img_raw_data = RawImageData(image_arr, gps_captured_data)
             self.camera_store.put_img_raw_to_queue(img_raw_data)
-
-            self.system_store.imgGUI.set_lastImg(image_arr)
-            self.system_store.imgGUI.set_newImg(True)
 
             end_time = time.perf_counter()
             capture_time = end_time - start_time
@@ -65,19 +57,16 @@ class CameraController:
                 f"Gain: {self.system_store.camPara.AnalogGain}, Time: {capture_time:.6f} seconds"
             )
 
-            return image_arr
-
     def auto_gain_adjustment(self):
-        if not self.camera_store.check_gain_sample_img_empty():
-            last_img = self.camera_store.get_gain_sample_img()
-            grey_brightness = self.image_brightness_grey(last_img)
-            self.system_store.set_last_img_grey_brightness(grey_brightness)
+        last_img = self.camera_store.get_gain_sample_img()
+        grey_brightness = self.image_brightness_grey(last_img)
+        self.system_store.set_last_img_grey_brightness(grey_brightness)
 
-            new_gain = self.pid(grey_brightness)
-            self.system_store.camPara.set_analog_gain(new_gain)
-            self.system_store.camPara.set_update()
+        new_gain = self.pid(grey_brightness)
+        self.system_store.camPara.set_analog_gain(new_gain)
+        self.system_store.camPara.set_update()
 
-            self.logger.info(f"{__class__.__name__}: Brightness: {grey_brightness}, Gain: {new_gain}")
+        self.logger.info(f"{__class__.__name__}: Brightness: {grey_brightness}, Gain: {new_gain}")
 
     def image_brightness_grey(self, img: np.ndarray) -> float:
         roi = img[:4056, 1216:3040, :]  # 1216 = 3040*2/5
@@ -85,39 +74,73 @@ class CameraController:
         return np.average(grey_img)
 
     def run(self):
-        self.start()
         self.system_store.cameraState.set_state(1)  # init
+        self.logger.info(f"{__class__.__name__}: Initializing Camera Service...")
+        self.camera_manager.start_camera_process(capture_process_worker)
         time.sleep(1)
         self.system_store.cameraState.set_state(2)  # ready
 
-        self.logger.info(f"{__class__.__name__}:Waiting for capture signal...")
-
+        self.logger.info(f"{__class__.__name__}:Ready... Waiting for capture signal...")
         while not self.stop_event.is_set():
             self.system_store.cameraState.set_state(4)  # running
 
             if self.system_store.camPara.update:
-                self.camera.set_controls({"AnalogueGain": self.system_store.camPara.AnalogGain})
+                self.camera_manager.update_controls(self.system_store.camPara.AnalogGain)
                 self.system_store.camPara.clear_update()
 
             if self.system_store.camera_gain_sample:
                 self.system_store.clear_camera_gain_sample()
-                image_arr = self.camera.capture_array()
+                image_arr = self.camera_manager.capture_image()
                 self.camera_store.put_gain_sample_img(image_arr)
 
             if self.system_store.get_camera_ctrl_signal():
                 self.capture_image()
                 self.system_store.clear_camera_ctrl_signal()
 
-            self.auto_gain_adjustment()
+            if self.system_store.camera_store.request_streamer['run']:
+                self.camera_manager.set_capture_mode(CameraManager.CaptureMode.STREAMING)
 
-            time.sleep(0.01)
+            if self.system_store.imgGUI.btn_GUI_capture_auto:
+                self.camera_manager.set_capture_mode(CameraManager.CaptureMode.COLLECTING)
+                while self.system_store.imgGUI.btn_GUI_capture_auto:
+                    self.capture_image()
 
-        self.stop()
+            if not self.camera_store.check_gain_sample_img_empty():
+                self.auto_gain_adjustment()
+
+            time.sleep(self.system_store.THREAD_SLEEP_1US)
+
+        self.camera_manager.stop_camera_process()
         self.system_store.cameraState.set_state(5)  # stop
 
 def camera_controller_worker(system_store, stop_event):
     try:
-        camera_controller = CameraController(system_store, stop_event)
+        camera_controller = CameraService(system_store, stop_event)
         camera_controller.run()
     except Exception as e:
         system_store.logger.error(f"Error in camera controller worker: {e}")
+
+def camera_feeding_preview_image(camera_store: CameraStore, stop_event):
+    try:
+        while (not camera_store.get_preview_img or not camera_store.preview_image_queue) and not stop_event.is_set():
+            # wait for resources available!
+            time.sleep(0.1)
+            pass
+
+        image_queue: Queue = camera_store.preview_image_queue
+        request_streamer = camera_store.request_streamer
+        request_streamer['run'] = False
+
+        streamer_process = Process(target=image_streamer_worker, args=(image_queue, 8000))
+        streamer_process.start()
+
+        while not stop_event.is_set():
+            if request_streamer['run'] == True:
+                image_queue.put(camera_store.get_preview_img())
+            time.sleep(0.01)
+
+        streamer_process.terminate()
+        streamer_process.join()
+
+    except Exception as e:
+        print(f"Error in camera feeding preview image: {e}")

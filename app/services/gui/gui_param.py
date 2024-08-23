@@ -9,6 +9,7 @@ class GuiParams():
         self.btn_GUI_capture_single = False     # True: trigger one capture; False: no capture
         self.btn_GUI_capture_auto = False       # True: change to auto capture; False: pause auto capture
         self.btn_GUI_Idling_cmd = True
+        self.btn_GUI_clean = False
 
     def set_lastImg(self, val):
         self.lastImg = val
@@ -32,4 +33,8 @@ class GuiParams():
 
     def set_btn_GUI_Idling_cmd(self, val):
         self.btn_GUI_Idling_cmd = val
+        return
+    
+    def set_btn_GUI_clean(self, val):
+        self.btn_GUI_clean = val
         return

@@ -13,3 +13,4 @@ app/archives/logs/
 app/services/gps/__pycache__/
 app/services/image/__pycache__/
 app/services/timer/__pycache__/
+app/test/

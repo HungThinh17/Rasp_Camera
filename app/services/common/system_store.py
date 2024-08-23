@@ -1,4 +1,5 @@
 import threading
+from services.database.my_sql_database import MySliDatabase
 from services.camera.camera_store import CameraStore
 from services.gps.gps_data import GPSCaptureData
 from services.camera.cam_parameter import dbCamPara
@@ -8,6 +9,10 @@ from services.gui.gui_param import GuiParams
 
 
 class SystemStore:
+    # Constants
+    THREAD_SLEEP_1US = 0.001
+    THREAD_SLEEP_10US = 0.01
+
     def __init__(self):
         # instance variable
         self.lock = threading.Lock()
@@ -22,8 +27,10 @@ class SystemStore:
         self.GpsState = dbDeviceState()
         self.ImuState = dbDeviceState()
         self.DataBaseState = dbDeviceState()
+
         self.gps_captured_data = GPSCaptureData()
-        self.camear_store = CameraStore()
+        self.camera_store = CameraStore()
+        self.sli_database = MySliDatabase()
 
         self.camera_ctrl_signal = False
         self.camera_status_signal = False

@@ -63,7 +63,7 @@ class GPS_Service:
                 self.system_store.set_gps_captured_data(gpsData)
                     
             self.system_store.GpsState.set_state(5) # stop
-            time.sleep(0.1)
+            time.sleep(self.system_store.THREAD_SLEEP_10US)
         return
 
 def gps_service_worker(system_store: SystemStore, stop_event: Event):
