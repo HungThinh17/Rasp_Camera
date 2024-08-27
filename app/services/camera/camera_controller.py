@@ -1,5 +1,6 @@
 
 from enum import Enum
+from services.camera.camera_config import CameraConfig
 from picamera2 import Picamera2
 
 class CameraRequests(Enum):
@@ -9,11 +10,6 @@ class CameraRequests(Enum):
     UPDATE_CONTROLS = 3
     UPDATE_CONFIG = 4
     RECORD = 5
-
-class CameraConfig(Enum):
-    STILL = 0
-    PREVIEW = 1
-    VIDEO = 2
 
 class CameraController:
     TUNING_FILE = "imx477.json"
@@ -28,7 +24,6 @@ class CameraController:
 
         self.still_config = None
         self.preview_config = None
-        self.video_config = None
 
         self.init_config()
         self.camera_config(CameraConfig.PREVIEW)
@@ -42,9 +37,8 @@ class CameraController:
             self.camera.stop()
 
     def init_config(self):
-        self.still_config = self.camera.create_still_configuration()
-        self.preview_config = self.camera.create_preview_configuration()
-        self.video_config = self.camera.create_video_configuration()
+        self.still_config = self.camera.create_video_configuration(main={"size": CameraConfig.STILL_RESOLUTION})
+        self.preview_config = self.camera.create_video_configuration(main={"size": CameraConfig.PREVIEW_RESOLUTION})
 
     def set_default_config(self, config: CameraConfig):
         self.default_config = config
@@ -59,8 +53,6 @@ class CameraController:
             self.camera.configure(self.still_config)
         elif camera_config == CameraConfig.PREVIEW:
             self.camera.configure(self.preview_config)
-        elif camera_config == CameraConfig.VIDEO:
-            self.camera.configure(self.video_config)
 
         if memoi:
             self.start()
@@ -106,7 +98,6 @@ class CameraController:
 
             else:
                 pass
-
 
 def capture_process_worker(capture_requests, capture_data_queue):
     try:

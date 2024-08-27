@@ -26,16 +26,17 @@ except OSError as e:
 
 from threading import Thread, Event
 from services.common.system_store import SystemStore
-from services.database.my_sql_database import MySliDatabase
 from services.common.system_status import SystemState
 from services.devTools.logger import Logger
 
 from services.timer.timer_service import timer_service_worker
 from services.gps.gps_service import gps_service_worker
 from services.database.database_service import database_service_worker
-from services.gui.guiService import gui_service_worker
 from services.camera.cameraService import camera_controller_worker, camera_feeding_preview_image
 from services.image.imageService import image_processor_worker
+
+if not '--headless' in sys.argv:
+    from services.gui.guiService import gui_service_worker
 
 class System:
 
@@ -46,6 +47,7 @@ class System:
         # Create a shared dictionary to store the database connection
         self.system_store: SystemStore = None
         self.stop_event = Event()
+        self.logger = None
 
     def initialize_system(self):
         """
@@ -77,8 +79,11 @@ class System:
         self.threads.append(gps_thread)
 
         # Thread: GUI display
-        gui_thread = Thread(name='GUI Service', target=gui_service_worker, args=(self.system_store, self.stop_event,))
-        self.threads.append(gui_thread)
+        if not '--headless' in sys.argv:
+            gui_thread = Thread(name='GUI Service', target=gui_service_worker, args=(self.system_store, self.stop_event,))
+            self.threads.append(gui_thread)
+        else:
+            self.system_store.system_headless = True
 
         # Thread: input database
         data_thread = Thread(name='Database Service', target=database_service_worker, args=(self.system_store, self.stop_event))
@@ -133,20 +138,20 @@ class System:
         """
         Handle user input (keyboard or GUI) to transition between system states or capture images.
         """
-        if (self.system_store.keyboardControl == "r" or self.system_store.imgGUI.btn_GUI_capture_auto) and \
+        if (self.system_store.keyboardControl == "r" or self.system_store.imgGUI.request_auto_capture) and \
            (system_state == SystemState.READY or system_state == SystemState.PAUSED):
             self.transition_to_run_state(self.system_store)
 
-        elif (self.system_store.keyboardControl == "r" or self.system_store.imgGUI.btn_GUI_capture_auto) and \
+        elif (self.system_store.keyboardControl == "r" or self.system_store.imgGUI.request_auto_capture) and \
              (system_state == SystemState.RUNNING or system_state == SystemState.IDLING_STOP):
             self.transition_to_pause_state(self.system_store)
 
-        elif self.system_store.keyboardControl == "a" or self.system_store.imgGUI.btn_GUI_capture_single:
+        elif self.system_store.keyboardControl == "a" or self.system_store.imgGUI.request_single_capture:
             self.system_store.set_camera_ctrl_signal()
             self.system_store.clear_kbCtrl()
             self.system_store.imgGUI.set_btn_GUI_capture_single(False)
 
-        elif self.system_store.keyboardControl == "c" or self.system_store.imgGUI.btn_GUI_exit:
+        elif self.system_store.keyboardControl == "c" or self.system_store.imgGUI.request_exit_app:
             self.stop_app()
 
     def transition_to_run_state(self):
@@ -177,7 +182,7 @@ class System:
         else:
             self.system_store.timer_idling.stop()
 
-        if self.system_store.timer_idling.Output and self.system_store.imgGUI.btn_GUI_Idling_cmd and system_state == 4:
+        if self.system_store.timer_idling.Output and self.system_store.imgGUI.request_idling and system_state == 4:
             self.system_store.sysState.set_state(SystemState.IDLING_STOP)  # system idling stop
             self.logger.info(f"{__class__.__name__}: system idling")
 

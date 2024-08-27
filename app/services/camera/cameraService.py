@@ -1,3 +1,4 @@
+import sys
 import time
 import numpy as np
 from simple_pid import PID
@@ -99,10 +100,12 @@ class CameraService:
 
             if self.system_store.camera_store.request_streamer['run']:
                 self.camera_manager.set_capture_mode(CameraManager.CaptureMode.STREAMING)
+                while not self.stop_event.is_set():
+                    pass
 
-            if self.system_store.imgGUI.btn_GUI_capture_auto:
+            if self.system_store.imgGUI.request_auto_capture or ('--headless' in sys.argv):
                 self.camera_manager.set_capture_mode(CameraManager.CaptureMode.COLLECTING)
-                while self.system_store.imgGUI.btn_GUI_capture_auto:
+                while self.system_store.imgGUI.request_auto_capture or ('--headless' in sys.argv):
                     self.capture_image()
 
             if not self.camera_store.check_gain_sample_img_empty():
@@ -136,8 +139,8 @@ def camera_feeding_preview_image(camera_store: CameraStore, stop_event):
 
         while not stop_event.is_set():
             if request_streamer['run'] == True:
+            # if request_streamer['run'] == True or ('--headless' in sys.argv):
                 image_queue.put(camera_store.get_preview_img())
-            time.sleep(0.01)
 
         streamer_process.terminate()
         streamer_process.join()

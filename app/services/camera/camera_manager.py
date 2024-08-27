@@ -2,7 +2,8 @@ import time
 from enum import Enum
 from threading import Lock
 from multiprocessing import Queue, Process, Manager
-from services.camera.camera_controller import CameraConfig, CameraRequests
+from services.camera.camera_config import CameraConfig
+from services.camera.camera_controller import CameraRequests
 
 class CameraManager:
     CAMERA_INITIALIZE_TIME = 1 # seconds
