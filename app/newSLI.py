@@ -32,11 +32,14 @@ from services.devTools.logger import Logger
 from services.timer.timer_service import timer_service_worker
 from services.gps.gps_service import gps_service_worker
 from services.database.database_service import database_service_worker
-from services.camera.cameraService import camera_controller_worker, camera_feeding_preview_image
+from services.camera.cameraService import camera_controller_worker
 from services.image.imageService import image_processor_worker
 
-if not '--headless' in sys.argv:
+if '--headless' in sys.argv:
+    from services.web.guiService import web_service_workder
+else:
     from services.gui.guiService import gui_service_worker
+
 
 class System:
 
@@ -79,11 +82,12 @@ class System:
         self.threads.append(gps_thread)
 
         # Thread: GUI display
-        if not '--headless' in sys.argv:
+        if '--headless' in sys.argv:
+            web_thread = Thread(name='Web Service', target=web_service_workder, args=(self.system_store, self.stop_event))
+            self.threads.append(web_thread)
+        else:
             gui_thread = Thread(name='GUI Service', target=gui_service_worker, args=(self.system_store, self.stop_event,))
             self.threads.append(gui_thread)
-        else:
-            self.system_store.system_headless = True
 
         # Thread: input database
         data_thread = Thread(name='Database Service', target=database_service_worker, args=(self.system_store, self.stop_event))
@@ -93,9 +97,6 @@ class System:
         camera_thread = Thread(name='Camera Service', target=camera_controller_worker, args=(self.system_store, self.stop_event))
         self.threads.append(camera_thread)
 
-        # capture camera
-        streamer_thread = Thread(name='Streamer Service', target=camera_feeding_preview_image, args=(self.system_store.camera_store, self.stop_event))
-        self.threads.append(streamer_thread)
 
         # save image array to file
         image_thread = Thread(name='Image Service', target=image_processor_worker, args=(self.system_store, self.stop_event))
