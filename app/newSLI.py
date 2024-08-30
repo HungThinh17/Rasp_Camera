@@ -36,7 +36,7 @@ from services.camera.cameraService import camera_controller_worker
 from services.image.imageService import image_processor_worker
 
 if '--headless' in sys.argv:
-    from services.web.guiService import web_service_workder
+    from services.web.webService import web_service_worker
 else:
     from services.gui.guiService import gui_service_worker
 
@@ -83,7 +83,7 @@ class System:
 
         # Thread: GUI display
         if '--headless' in sys.argv:
-            web_thread = Thread(name='Web Service', target=web_service_workder, args=(self.system_store, self.stop_event))
+            web_thread = Thread(name='Web Service', target=web_service_worker, args=(self.system_store, self.stop_event))
             self.threads.append(web_thread)
         else:
             gui_thread = Thread(name='GUI Service', target=gui_service_worker, args=(self.system_store, self.stop_event,))

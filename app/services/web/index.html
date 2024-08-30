@@ -16,7 +16,6 @@
             position: relative;
             width: 1024px;
             height: 634px;
-            background-image: url('Digime.jpeg');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -94,11 +93,14 @@
             left: 0;
             z-index: -1;
         }
+        .bottom-buttons .clicked {
+            background-color: red; /* Change to the desired color */
+        }
     </style>
 </head>
 <body>
     <div id="bg-panel">
-        <img src="/stream" id="streamImage">
+        <img id="streamImage" src="Digime.jpeg" alt="Camera Stream">
         <div id="lbStatus" class="label">Initializing</div>
         <div id="lbInfo" class="label">
             Time: <br>
@@ -120,6 +122,7 @@
         <button id="btPrevious" class="button">◀</button>
         <button id="btNext" class="button">▶</button>
     </div>
-    <script src="guiService.js" onload="console.log('guiService.js loaded successfully')" onerror="console.error('Failed to load guiService.js')"></script>
+    <script src="webService.js" onload="console.log('guiService.js loaded successfully')" onerror="console.error('Failed to load guiService.js')"></script>
 </body>
 </html>
+

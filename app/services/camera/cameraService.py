@@ -4,13 +4,11 @@ import numpy as np
 from simple_pid import PID
 from picamera2 import Picamera2
 from threading import Event
-from multiprocessing import Queue, Manager, Process
 from services.devTools.profilingService import Profiler
 from services.common.system_store import SystemStore
 from services.image.img_metadata import RawImageData
 from services.camera.camera_manager import CameraManager
 from services.camera.camera_store import CameraStore
-from services.web.guiService import image_streamer_worker
 from services.camera.camera_controller import capture_process_worker
 
 # PID controller parameters
@@ -98,7 +96,7 @@ class CameraService:
                 self.capture_image()
                 self.system_store.clear_camera_ctrl_signal()
 
-            if self.system_store.camera_store.request_streamer['run']:
+            if self.system_store.camera_store.request_streamer.get('run'):
                 self.camera_manager.set_capture_mode(CameraManager.CaptureMode.STREAMING)
                 while not self.stop_event.is_set():
                     pass
