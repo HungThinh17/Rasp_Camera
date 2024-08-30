@@ -82,6 +82,8 @@ class WebServer(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/request_stream':
             self.handle_stream_request()
+        elif self.path == '/request_clean':
+            self.handle_clean_request()
         else:
             self.send_error(HTTPStatus.NOT_FOUND)
 
@@ -99,18 +101,23 @@ class WebServer(http.server.BaseHTTPRequestHandler):
         start_stream = data.get('startStream', False)
 
         if start_stream:
-            self.user_request_dict[UserRequest.STREAMING] = True
-            self.server.is_streaming = True
+            self.startStreaming()
         else:
-            self.user_request_dict[UserRequest.STREAMING] = False
-            self.server.is_streaming = False
+            self.stopStreaming()
     
         # handle request response
         self.send_response(HTTPStatus.OK)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
+        response = ''
         response = json.dumps({'isStreaming': start_stream})
         self.wfile.write(response.encode('utf-8'))
+
+    def handle_clean_request(self):
+        self.user_request_dict[UserRequest.CLEAN] = True
+        self.send_response(HTTPStatus.OK)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
 
     def startStreaming(self):
         self.user_request_dict[UserRequest.STREAMING] = True

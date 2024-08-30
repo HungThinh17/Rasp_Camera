@@ -24,6 +24,12 @@ function handleExitButtonClick() {
 
 function handleCleanButtonClick() {
   // Implement clean functionality
+  this.classList.toggle('clicked')
+  setTimeout(() => {
+    this.classList.toggle('clicked')
+  }, 200);
+
+  doCleanReqquest()
 }
 
 function handleAutoButtonClick() {
@@ -38,11 +44,12 @@ function handleStreamButtonClick() {
   this.classList.toggle('clicked')
   console.log("Stream button clicked.....");
   if (isStreaming) {
+    isStreaming = false;
     stopStreaming();
   } else {
+    isStreaming = true;
     doStreamRequest();
   }
-  isStreaming = !isStreaming
 }
 
 function handlePreviewButtonClick() {
@@ -80,19 +87,34 @@ function doStreamRequest() {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ startStream: !isStreaming }),
+    body: JSON.stringify({ startStream: isStreaming }),
   })
-    .then(response => response.json())
-    .then(data => {
-      const isStreaming = data.isStreaming; // Access the isStreaming property
-      if (isStreaming) {
-        console.log("Starting stream...");
-        startStreaming();
-      }
-    })
-    .catch(error => {
-      console.error('Fetch error:', error); // Handle fetch error
-    });
+  .then(response => response.json())
+  .then(data => {
+    const isStreaming = data.isStreaming; // Access the isStreaming property
+    if (isStreaming) {
+      console.log("Starting stream...");
+      startStreaming();
+    }
+  })
+  .catch(error => {
+    console.error('Fetch error:', error); // Handle fetch error
+  });
+}
+
+function doCleanReqquest() {
+  fetch('/request_clean', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ clean: true }),
+  })
+  .then(response => response.json())
+  .then(data => print (data))
+  .catch(error => {
+    console.error('Fetch error:', error); // Handle fetch error
+  });
 }
 
 function startStreaming() {

@@ -84,6 +84,10 @@ class WebService:
                     self.user_request_dict['info'] = self.update_info()
                     self.user_request_dict[UserRequest.UPDATE_INFO] = False
 
+                if self.user_request_dict.get(UserRequest.CLEAN):
+                    self.system_store.imgGUI.request_clean_up = True
+                    self.user_request_dict[UserRequest.CLEAN] = False
+
         except Exception as e:
             print(f"Error in web service worker: {e}")
         finally:
