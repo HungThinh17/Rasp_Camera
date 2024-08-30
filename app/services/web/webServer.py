@@ -14,6 +14,7 @@ from PIL import Image
 class UserRequest(Enum):
     UPDATE_INFO = 'UPDATE_INFO'
     STREAMING = 'STREAMING'
+    STOP_STREAMING = 'STOP_STREAMING'
     SINGLE_CAPTURE = 'SINGLE_CAPTURE'
     AUTO_CAPTURE = 'AUTO_CAPTURE'
     PREVIEW = 'PREVIEW'
@@ -56,7 +57,7 @@ class WebServer(http.server.BaseHTTPRequestHandler):
         elif self.path.startswith('Digime.jpeg'):
             try:
                 # stop streaming
-                self.server.is_streaming = False
+                self.stopStreaming()
                 # show digime image instead.
                 file_path = os.path.join(os.path.dirname(__file__), self.path.lstrip('/'))
                 with open(file_path, 'rb') as file:
@@ -110,6 +111,16 @@ class WebServer(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         response = json.dumps({'isStreaming': start_stream})
         self.wfile.write(response.encode('utf-8'))
+
+    def startStreaming(self):
+        self.user_request_dict[UserRequest.STREAMING] = True
+        self.user_request_dict[UserRequest.STOP_STREAMING] = False
+        self.server.is_streaming = True
+
+    def stopStreaming(self):
+        self.user_request_dict[UserRequest.STREAMING] = False
+        self.user_request_dict[UserRequest.STOP_STREAMING] = True
+        self.server.is_streaming = False
 
     def serve_html_file(self, filename):
         current_dir = os.path.dirname(os.path.abspath(__file__))

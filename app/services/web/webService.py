@@ -2,6 +2,7 @@ import time
 from multiprocessing import Process, Queue, Manager
 from services.common.system_store import SystemStore
 from services.web.webServer import UserRequest, web_server_worker
+from threading import Thread
 
 class WebService:
     def __init__(self, system_store: SystemStore, stop_event):
@@ -53,11 +54,21 @@ class WebService:
             f"Captured Images: {number_of_captured_images}"
         )
         return info_text
+    
+    def setupStreamingProcess(self):
+        def feedingImgage(camera_store, image_queue, request_streamer, stop_event):
+            while not stop_event.is_set():
+                if request_streamer.get('run'):
+                    image_queue.put(camera_store.get_preview_img())
+                else:
+                    time.sleep(1)
+        Thread(target=feedingImgage, args=(self.camera_store, self.image_queue, self.request_streamer, self.stop_event)).start()
 
     def run(self):
         try:
             self.initialize()
             self.start_server()
+            self.setupStreamingProcess()
 
             while not self.stop_event.is_set():
                 if self.user_request_dict.get(UserRequest.STREAMING):
@@ -65,12 +76,13 @@ class WebService:
                     while not self.image_queue.empty(): self.image_queue.get_nowait() # clear queue
                     self.user_request_dict[UserRequest.STREAMING] = False # reset streaming request
 
-                if self.user_request_dict.get(UserRequest.UPDATE_INFO):
-                    self.user_request_dict[UserRequest.UPDATE_INFO] = False
-                    self.user_request_dict['info'] = self.update_info()
+                if self.user_request_dict.get(UserRequest.STOP_STREAMING):
+                    self.request_streamer['run'] = False
+                    self.user_request_dict[UserRequest.STOP_STREAMING] = False
 
-                if self.request_streamer.get('run'):
-                    self.image_queue.put(self.camera_store.get_preview_img())
+                if self.user_request_dict.get(UserRequest.UPDATE_INFO):
+                    self.user_request_dict['info'] = self.update_info()
+                    self.user_request_dict[UserRequest.UPDATE_INFO] = False
 
         except Exception as e:
             print(f"Error in web service worker: {e}")

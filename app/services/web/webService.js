@@ -97,7 +97,7 @@ function doStreamRequest() {
 
 function startStreaming() {
   const streamImage = document.getElementById('streamImage');
-  streamImage.src = '/stream'
+  streamImage.src = '/stream?' + new Date().getTime();
   streamImage.style.display = 'block'; // Ensure the image is visible
 }
 
@@ -115,4 +115,8 @@ function handleStreamError() {
 }  
 
 // Call updateUI every 1000 milliseconds (1 second)
-setInterval(updateUI, 500);
+setInterval(() => {
+  if (!isStreaming) {
+    updateUI();
+  }
+}, 500);
