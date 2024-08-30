@@ -88,6 +88,18 @@ class WebService:
                     self.system_store.imgGUI.request_clean_up = True
                     self.user_request_dict[UserRequest.CLEAN] = False
 
+                if self.user_request_dict.get(UserRequest.SINGLE_CAPTURE):
+                    self.system_store.imgGUI.request_single_capture = True
+                    self.user_request_dict[UserRequest.SINGLE_CAPTURE] = False
+
+                if self.user_request_dict.get(UserRequest.AUTO_CAPTURE):
+                    self.system_store.imgGUI.request_auto_capture = True
+                    self.user_request_dict[UserRequest.AUTO_CAPTURE] = False
+
+                if self.user_request_dict.get(UserRequest.STOP_AUTO_CAPTURE):
+                    self.system_store.imgGUI.request_auto_capture = False
+                    self.user_request_dict[UserRequest.STOP_AUTO_CAPTURE] = False
+
         except Exception as e:
             print(f"Error in web service worker: {e}")
         finally:

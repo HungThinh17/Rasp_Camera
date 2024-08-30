@@ -1,5 +1,6 @@
 const bgPanel = document.getElementById('bg-panel');
 let isStreaming = false;
+let isAutoCapture = false;
 
 document.addEventListener('DOMContentLoaded', function () {
   // Add event listeners and functionality here
@@ -23,33 +24,36 @@ function handleExitButtonClick() {
 }
 
 function handleCleanButtonClick() {
-  // Implement clean functionality
   this.classList.toggle('clicked')
   setTimeout(() => {
     this.classList.toggle('clicked')
   }, 200);
-
+  // Implement clean functionality
   doCleanReqquest()
 }
 
 function handleAutoButtonClick() {
+  this.classList.toggle('clicked')
   // Implement auto functionality
+  isAutoCapture = !isAutoCapture;
+  doAutoCaptureRequest(isAutoCapture)
 }
 
 function handleCaptureButtonClick() {
+  this.classList.toggle('clicked')
+  setTimeout(() => {
+    this.classList.toggle('clicked')
+  }, 200);
   // Implement capture functionality
+  doSingleCaptureRequest()
 }
 
 function handleStreamButtonClick() {
   this.classList.toggle('clicked')
   console.log("Stream button clicked.....");
-  if (isStreaming) {
-    isStreaming = false;
-    stopStreaming();
-  } else {
-    isStreaming = true;
-    doStreamRequest();
-  }
+  if (isStreaming) stopStreaming() // stop streaming from client first then do request to stop it on server side
+  isStreaming = !isStreaming;
+  doStreamRequest();
 }
 
 function handlePreviewButtonClick() {
@@ -81,8 +85,34 @@ function updateUI() {
     });
 }
 
+function doAutoCaptureRequest(isAutoCapture) {
+  fetch('/request_auto_capture', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ auto: isAutoCapture }),
+  })
+  .catch(error => {
+    console.error('Fetch error:', error); // Handle fetch error
+  });
+}
+
+function doSingleCaptureRequest() {
+  fetch('/request_single_capture', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ capture: true }),
+  })
+  .catch(error => {
+    console.error('Fetch error:', error); // Handle fetch error
+  });
+}
+
 function doStreamRequest() {
-  fetch('/request_stream', {
+  fetch('/request_stream?' + new Date().getTime(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -95,6 +125,8 @@ function doStreamRequest() {
     if (isStreaming) {
       console.log("Starting stream...");
       startStreaming();
+    } else {
+      console.log("Stoped!");
     }
   })
   .catch(error => {

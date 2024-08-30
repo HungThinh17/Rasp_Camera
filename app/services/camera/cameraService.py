@@ -98,12 +98,15 @@ class CameraService:
 
             if self.system_store.camera_store.request_streamer.get('run'):
                 self.camera_manager.set_capture_mode(CameraManager.CaptureMode.STREAMING)
-                while not self.stop_event.is_set():
+                while self.system_store.camera_store.request_streamer.get('run'):
+                    # Lock the camera service.. due to busy with streaming...
+                    time.sleep(1)
                     pass
 
             if self.system_store.imgGUI.request_auto_capture:
                 self.camera_manager.set_capture_mode(CameraManager.CaptureMode.COLLECTING)
                 while self.system_store.imgGUI.request_auto_capture:
+                    # Lock the camera service.. due to busy auto capture image...
                     self.capture_image()
 
             if not self.camera_store.check_gain_sample_img_empty():

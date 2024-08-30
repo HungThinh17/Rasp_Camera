@@ -17,6 +17,7 @@ class UserRequest(Enum):
     STOP_STREAMING = 'STOP_STREAMING'
     SINGLE_CAPTURE = 'SINGLE_CAPTURE'
     AUTO_CAPTURE = 'AUTO_CAPTURE'
+    STOP_AUTO_CAPTURE = 'STOP_AUTO_CAPTURE'
     PREVIEW = 'PREVIEW'
     CLEAN = 'CLEAN'
     EXIT = 'EXIT'
@@ -80,10 +81,14 @@ class WebServer(http.server.BaseHTTPRequestHandler):
                 self.send_error(HTTPStatus.NOT_FOUND)
 
     def do_POST(self):
-        if self.path == '/request_stream':
+        if self.path.startswith('/request_stream'):
             self.handle_stream_request()
         elif self.path == '/request_clean':
             self.handle_clean_request()
+        elif self.path == '/request_single_capture':
+            self.handle_single_capture_request()
+        elif self.path == '/request_auto_capture':
+            self.handle_auto_capture_request()
         else:
             self.send_error(HTTPStatus.NOT_FOUND)
 
@@ -115,6 +120,28 @@ class WebServer(http.server.BaseHTTPRequestHandler):
 
     def handle_clean_request(self):
         self.user_request_dict[UserRequest.CLEAN] = True
+        self.send_response(HTTPStatus.OK)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+
+    def handle_single_capture_request(self):
+        self.user_request_dict[UserRequest.SINGLE_CAPTURE] = True
+        self.send_response(HTTPStatus.OK)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+
+    def handle_auto_capture_request(self):
+        # handle request data
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        data = json.loads(post_data.decode('utf-8'))
+        start_auto_capture = data.get('auto', False)
+
+        if start_auto_capture:
+            self.user_request_dict[UserRequest.AUTO_CAPTURE] = True
+        else:
+            self.user_request_dict[UserRequest.STOP_AUTO_CAPTURE] = True
+
         self.send_response(HTTPStatus.OK)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
