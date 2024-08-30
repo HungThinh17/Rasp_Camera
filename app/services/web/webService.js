@@ -1,6 +1,7 @@
 const bgPanel = document.getElementById('bg-panel');
 let isStreaming = false;
 let isAutoCapture = false;
+let isPreviewing = false;
 
 document.addEventListener('DOMContentLoaded', function () {
   // Add event listeners and functionality here
@@ -14,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('btNext').addEventListener('click', handleNextButtonClick);
   document.getElementById('btIdling').addEventListener('click', handleIdlingButtonClick);
 
-  window.addEventListener('beforeunload', stopStreaming);
+  window.addEventListener('beforeunload', restoreDefaultImg);
   const streamImage = document.getElementById('streamImage');
   streamImage.addEventListener('error', handleStreamError);
 });
@@ -51,21 +52,31 @@ function handleCaptureButtonClick() {
 function handleStreamButtonClick() {
   this.classList.toggle('clicked')
   console.log("Stream button clicked.....");
-  if (isStreaming) stopStreaming() // stop streaming from client first then do request to stop it on server side
+  if (isStreaming) restoreDefaultImg() // stop streaming from client first then do request to stop it on server side
   isStreaming = !isStreaming;
   doStreamRequest();
 }
 
 function handlePreviewButtonClick() {
+  this.classList.toggle('clicked')
   // Implement preview functionality
+  isPreviewing = !isPreviewing;
+  if (isPreviewing) {
+    doPreviewRequest(isPreviewing)
+  } else {
+    restoreDefaultImg()
+  }
+  doPreviewRequest(isPreviewing)
 }
 
 function handlePreviousButtonClick() {
   // Implement previous functionality
+  if(isPreviewing) doPreviousPreviewRequest();
 }
 
 function handleNextButtonClick() {
   // Implement next functionality
+  if(isPreviewing) doNextPreviewRequest();
 }
 
 function handleIdlingButtonClick() {
@@ -83,6 +94,90 @@ function updateUI() {
     .catch(error => {
       console.error('Fetch error:', error); // Handle fetch error
     });
+}
+
+function doPreviewRequest(isPreviewing) {
+  fetch('/request_preview', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ startPreview: isPreviewing }),
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    // Convert the response to a Blob
+    return response.blob();
+  })
+  .then(blob => {
+    // Create a URL for the Blob
+    const imageUrl = URL.createObjectURL(blob);
+
+    // Find the img element and update its src attribute
+    const streamImage = document.getElementById('streamImage');
+    streamImage.src = imageUrl;
+  })
+  .catch(error => {
+    console.error('Fetch error:', error); // Handle fetch error
+  });
+}
+
+function doNextPreviewRequest(){
+  fetch('/request_next', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ nextPreview: true }),
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    // Convert the response to a Blob
+    return response.blob();
+  })
+  .then(blob => {
+    // Create a URL for the Blob
+    const imageUrl = URL.createObjectURL(blob);
+
+    // Find the img element and update its src attribute
+    const streamImage = document.getElementById('streamImage');
+    streamImage.src = imageUrl;
+  })
+  .catch(error => {
+    console.error('Fetch error:', error); // Handle fetch error
+  });
+}
+
+function doPreviousPreviewRequest(){
+  fetch('/request_previous', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ previousPreview: true }),
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    // Convert the response to a Blob
+    return response.blob();
+  })
+  .then(blob => {
+    // Create a URL for the Blob
+    const imageUrl = URL.createObjectURL(blob);
+
+    // Find the img element and update its src attribute
+    const streamImage = document.getElementById('streamImage');
+    streamImage.src = imageUrl;
+  })
+  .catch(error => {
+    console.error('Fetch error:', error); // Handle fetch error
+  });
 }
 
 function doAutoCaptureRequest(isAutoCapture) {
@@ -155,7 +250,7 @@ function startStreaming() {
   streamImage.style.display = 'block'; // Ensure the image is visible
 }
 
-function stopStreaming() {
+function restoreDefaultImg() {
   const streamImage = document.getElementById('streamImage');
   streamImage.src = 'Digime.jpeg'
   streamImage.style.display = 'block'; // Hide the image

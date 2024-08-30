@@ -1,8 +1,11 @@
 import time
 from multiprocessing import Process, Queue, Manager
+from typing import List
+from services.image.img_filedata import FileImageData
 from services.common.system_store import SystemStore
 from services.web.webServer import UserRequest, web_server_worker
 from threading import Thread
+from PIL import Image, ImageTk, ImageFile
 
 class WebService:
     def __init__(self, system_store: SystemStore, stop_event):
@@ -13,6 +16,10 @@ class WebService:
         self.request_streamer = None
         self.server_process = None
         self.user_request_dict = None
+
+        self.preview_mode = False
+        self.available_images: List[FileImageData] = None
+        self.current_image_idx = 0
 
     def initialize(self):
         # Wait for resources to be available
@@ -64,6 +71,16 @@ class WebService:
                     time.sleep(1)
         Thread(target=feedingImgage, args=(self.camera_store, self.image_queue, self.request_streamer, self.stop_event)).start()
 
+    def load_preview_mode(self):
+        self.preview_mode = True
+        self.available_images = self.system_store.sli_database.get_all_items_as_img_data()
+        self.current_image_idx = 0 # reset index
+
+    def load_preview_image(self, idx):
+        img_path = self.available_images[idx].file_path
+        self.user_request_dict['img_path'] = img_path
+
+
     def run(self):
         try:
             self.initialize()
@@ -99,6 +116,23 @@ class WebService:
                 if self.user_request_dict.get(UserRequest.STOP_AUTO_CAPTURE):
                     self.system_store.imgGUI.request_auto_capture = False
                     self.user_request_dict[UserRequest.STOP_AUTO_CAPTURE] = False
+
+                if self.user_request_dict.get(UserRequest.PREVIEW):
+                    self.load_preview_mode()
+                    self.load_preview_image(self.current_image_idx)
+                    self.user_request_dict[UserRequest.PREVIEW] = False
+
+                if self.user_request_dict.get(UserRequest.NEXT):
+                    if self.current_image_idx < len(self.available_images) - 1:
+                        self.current_image_idx += 1
+                    self.load_preview_image(self.current_image_idx)
+                    self.user_request_dict[UserRequest.NEXT] = False
+
+                if self.user_request_dict.get(UserRequest.PREVIOUS):
+                    if self.current_image_idx > 0:
+                        self.current_image_idx -= 1
+                    self.load_preview_image(self.current_image_idx)
+                    self.user_request_dict[UserRequest.PREVIOUS] = False
 
         except Exception as e:
             print(f"Error in web service worker: {e}")

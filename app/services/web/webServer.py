@@ -19,6 +19,8 @@ class UserRequest(Enum):
     AUTO_CAPTURE = 'AUTO_CAPTURE'
     STOP_AUTO_CAPTURE = 'STOP_AUTO_CAPTURE'
     PREVIEW = 'PREVIEW'
+    NEXT = 'NEXT'
+    PREVIOUS = 'PREVIOUS'
     CLEAN = 'CLEAN'
     EXIT = 'EXIT'
 
@@ -89,8 +91,62 @@ class WebServer(http.server.BaseHTTPRequestHandler):
             self.handle_single_capture_request()
         elif self.path == '/request_auto_capture':
             self.handle_auto_capture_request()
+        elif self.path == '/exit':
+            # self.handle_exit_request()
+            pass
+        elif self.path == '/request_preview':
+            self.handle_preview_request()
+            pass
+        elif self.path == '/request_next':
+            self.handle_next_preview_request()
+            pass
+        elif self.path == '/request_previous':
+            self.handle_previous_preview_request()
+            pass
         else:
             self.send_error(HTTPStatus.NOT_FOUND)
+
+    def handle_preview_request(self):
+        # handle request data
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        data = json.loads(post_data.decode('utf-8'))
+        start_preview = data.get('startPreview', False)
+
+        if start_preview:
+            self.server.is_previewing = True
+            self.user_request_dict[UserRequest.PREVIEW] = True
+            while(self.user_request_dict[UserRequest.PREVIEW]): pass
+            file_path = self.user_request_dict['img_path']
+            with open(file_path, 'rb') as file:
+                self.send_response(HTTPStatus.OK)
+                self.send_header('Content-Type', 'image/jpeg')
+                self.end_headers()
+                self.wfile.write(file.read())
+        else:
+            self.server.is_previewing = False
+
+    def handle_next_preview_request(self):
+        if self.server.is_previewing:
+            self.user_request_dict[UserRequest.NEXT] = True
+            while(self.user_request_dict[UserRequest.NEXT]): pass
+            file_path = self.user_request_dict['img_path']
+            with open(file_path, 'rb') as file:
+                self.send_response(HTTPStatus.OK)
+                self.send_header('Content-Type', 'image/jpeg')
+                self.end_headers()
+                self.wfile.write(file.read())
+
+    def handle_previous_preview_request(self):
+        if self.server.is_previewing:
+            self.user_request_dict[UserRequest.PREVIOUS] = True
+            while(self.user_request_dict[UserRequest.PREVIOUS]): pass
+            file_path = self.user_request_dict['img_path']
+            with open(file_path, 'rb') as file:
+                self.send_response(HTTPStatus.OK)
+                self.send_header('Content-Type', 'image/jpeg')
+                self.end_headers()
+                self.wfile.write(file.read())
 
     def update_info(self):
         self.user_request_dict[UserRequest.UPDATE_INFO] = True
@@ -221,6 +277,7 @@ def web_server_worker(image_queue: Queue, user_request_dict, port=5000):
                 self.data_queue: Queue = data_queue
                 self.user_request_dict = user_request_dict
                 self.is_streaming = False
+                self.is_previewing = False
 
         httpd = StreamingServer(server_address, WebServer, image_queue)
         print(f"Serving at http://localhost:{port}")
