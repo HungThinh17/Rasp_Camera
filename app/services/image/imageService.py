@@ -68,7 +68,7 @@ class ImageProcessor:
                 self.save_image_to_file(img_data)
                 self.logger.info(f"{__class__.__name__}:Done!")
 
-            if self.system_store.imgGUI.btn_GUI_clean:
+            if self.system_store.imgGUI.request_clean_up:
                 self.system_store.imgGUI.set_btn_GUI_clean(False)
                 self.clear_images_directory()
                 self.system_store.sli_database.remove_all_items()

@@ -1,15 +1,14 @@
+import sys
 import time
 import numpy as np
 from simple_pid import PID
 from picamera2 import Picamera2
 from threading import Event
-from multiprocessing import Queue, Manager, Process
 from services.devTools.profilingService import Profiler
 from services.common.system_store import SystemStore
 from services.image.img_metadata import RawImageData
 from services.camera.camera_manager import CameraManager
 from services.camera.camera_store import CameraStore
-from services.gui.image_streamer import ImageStreamer, image_streamer_worker
 from services.camera.camera_controller import capture_process_worker
 
 # PID controller parameters
@@ -97,12 +96,17 @@ class CameraService:
                 self.capture_image()
                 self.system_store.clear_camera_ctrl_signal()
 
-            if self.system_store.camera_store.request_streamer['run']:
+            if self.system_store.camera_store.request_streamer.get('run'):
                 self.camera_manager.set_capture_mode(CameraManager.CaptureMode.STREAMING)
+                while self.system_store.camera_store.request_streamer.get('run'):
+                    # Lock the camera service.. due to busy with streaming...
+                    time.sleep(1)
+                    pass
 
-            if self.system_store.imgGUI.btn_GUI_capture_auto:
+            if self.system_store.imgGUI.request_auto_capture:
                 self.camera_manager.set_capture_mode(CameraManager.CaptureMode.COLLECTING)
-                while self.system_store.imgGUI.btn_GUI_capture_auto:
+                while self.system_store.imgGUI.request_auto_capture:
+                    # Lock the camera service.. due to busy auto capture image...
                     self.capture_image()
 
             if not self.camera_store.check_gain_sample_img_empty():
@@ -120,27 +124,3 @@ def camera_controller_worker(system_store, stop_event):
     except Exception as e:
         system_store.logger.error(f"Error in camera controller worker: {e}")
 
-def camera_feeding_preview_image(camera_store: CameraStore, stop_event):
-    try:
-        while (not camera_store.get_preview_img or not camera_store.preview_image_queue) and not stop_event.is_set():
-            # wait for resources available!
-            time.sleep(0.1)
-            pass
-
-        image_queue: Queue = camera_store.preview_image_queue
-        request_streamer = camera_store.request_streamer
-        request_streamer['run'] = False
-
-        streamer_process = Process(target=image_streamer_worker, args=(image_queue, 8000))
-        streamer_process.start()
-
-        while not stop_event.is_set():
-            if request_streamer['run'] == True:
-                image_queue.put(camera_store.get_preview_img())
-            time.sleep(0.01)
-
-        streamer_process.terminate()
-        streamer_process.join()
-
-    except Exception as e:
-        print(f"Error in camera feeding preview image: {e}")

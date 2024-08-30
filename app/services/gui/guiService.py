@@ -119,7 +119,7 @@ class GUI_Service:
 
     def handle_auto_button_click(self):
         self.system_store.imgGUI.set_btn_GUI_capture_auto(
-            not self.system_store.imgGUI.btn_GUI_capture_auto #  toggle
+            not self.system_store.imgGUI.request_auto_capture #  toggle
         )
         self.logger.info(f"{__class__.__name__}: Auto button clicked, setting capture auto mode")
         self.notification.show("Start auto capturing...")
@@ -169,9 +169,9 @@ class GUI_Service:
         self.logger.info(f"{__class__.__name__}: Next button clicked")
 
     def handle_idling_button_click(self):
-        self.system_store.imgGUI.set_btn_GUI_Idling_cmd(not self.system_store.imgGUI.btn_GUI_Idling_cmd)
-        self.logger.info(f"{__class__.__name__}: Idling button clicked, setting idling mode to: {self.system_store.imgGUI.btn_GUI_Idling_cmd}")
-        if self.system_store.imgGUI.btn_GUI_Idling_cmd:
+        self.system_store.imgGUI.set_btn_GUI_Idling_cmd(not self.system_store.imgGUI.request_idling)
+        self.logger.info(f"{__class__.__name__}: Idling button clicked, setting idling mode to: {self.system_store.imgGUI.request_idling}")
+        if self.system_store.imgGUI.request_idling:
             self.notification.show("Idling mode ON")
         else:
             self.notification.show("Idling mode OFF")
@@ -195,7 +195,7 @@ class GUI_Service:
             self.gui_widget.config("lbStatus", text=f"System status {system_state.name}: PAUSE, waiting for run command", bg="gold")
 
         # Update idling button text
-        if self.system_store.imgGUI.btn_GUI_Idling_cmd:
+        if self.system_store.imgGUI.request_idling:
             self.gui_widget.config("btIdling", text="Idling ON")
         else:
             self.gui_widget.config("btIdling", text="Idling OFF")

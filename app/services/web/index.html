@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Control System</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100%;
+            overflow: hidden;
+        }
+        #bg-panel {
+            position: relative;
+            width: 1024px;
+            height: 634px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+        .label {
+            position: absolute;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .button {
+            position: absolute;
+            padding: 10px 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .button:hover {
+            transform: scale(1.05);
+        }
+        #lbStatus {
+            width: 500px;
+            background-color: rgba(255, 215, 0, 0.8);
+            color: black;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            text-align: center;
+        }
+        #lbInfo {
+            background-color: rgba(105, 105, 105, 0.8);
+            color: lime;
+            top: 60px;
+            left: 10px;
+            text-align: left;
+            font-size: 14px;
+            width: 200px;
+        }
+        #btExit {
+            background-color: #ff4d4d;
+            color: white;
+            top: 10px;
+            right: 10px;
+        }
+        .bottom-buttons {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        .bottom-buttons .button {
+            position: static;
+            background-color: #4CAF50;
+            color: white;
+        }
+        #btPrevious, #btNext {
+            background-color: #404040;
+            color: white;
+            bottom: 70px;
+        }
+        #btPrevious { right: 70px; }
+        #btNext { right: 20px; }
+        #streamImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .bottom-buttons .clicked {
+            background-color: red; /* Change to the desired color */
+        }
+    </style>
+</head>
+<body>
+    <div id="bg-panel">
+        <img id="streamImage" src="Digime.jpeg" alt="Camera Stream">
+        <div id="lbStatus" class="label">Initializing</div>
+        <div id="lbInfo" class="label">
+            Time: <br>
+            Lat: <br>
+            Lon: <br>
+            Alt: <br>
+            Satellite: <br>
+            Speed: 
+        </div>
+        <button id="btExit" class="button">Exit</button>
+        <div class="bottom-buttons">
+            <button id="btClean" class="button">Clean</button>
+            <button id="btAuto" class="button">Auto</button>
+            <button id="btCapture" class="button">Capture</button>
+            <button id="btStream" class="button">Stream</button>
+            <button id="btPreview" class="button">Preview</button>
+            <button id="btIdling" class="button">Idling</button>
+        </div>
+        <button id="btPrevious" class="button">◀</button>
+        <button id="btNext" class="button">▶</button>
+    </div>
+    <script src="webService.js" onload="console.log('guiService.js loaded successfully')" onerror="console.error('Failed to load guiService.js')"></script>
+</body>
+</html>
+
