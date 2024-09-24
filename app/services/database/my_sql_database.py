@@ -17,7 +17,7 @@ class MySliDatabase:
         self.db_table_name = 'sli_info'
         self.db_root_path = os.path.join(os.getcwd(), 'data/db/')
         self.lock = Lock()
-        self.connection_pool = self._create_connection_pool()
+        self.connection_pool = None
 
     def _create_connection_pool(self):
         try:

@@ -5,7 +5,6 @@ from services.image.img_filedata import FileImageData
 from services.common.system_store import SystemStore
 from services.web.webServer import UserRequest, web_server_worker
 from threading import Thread
-from PIL import Image, ImageTk, ImageFile
 
 class WebService:
     def __init__(self, system_store: SystemStore, stop_event):

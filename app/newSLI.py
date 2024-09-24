@@ -244,7 +244,8 @@ def main():
         system.stop_app()
 
     finally:
-        system.logger.info("All threads closed")
+        if system.logger is not None:
+            system.logger.info("All threads closed")
         sys.exit(0)
 
 if __name__ == "__main__":

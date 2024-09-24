@@ -22,7 +22,7 @@ removeDependencies:
 
 debug:
 	ssh $(USER)@$(ADDRESS) "sudo chmod -R 777 /dev/serial0"
-	ssh -L 5678:localhost:5678 -L 8000:localhost:8000 $(USER)@$(ADDRESS) "DISPLAY=:10 python $(MOUNTPOINT)/$(APP) --debug --headless" || true
+	ssh -L 5678:localhost:5678 -L 8000:localhost:8000 $(USER)@$(ADDRESS) "sudo DISPLAY=:10 python $(MOUNTPOINT)/$(APP) --debug --headless" || true
 
 manualProfiling:
 	ssh $(USER)@$(ADDRESS) "sudo rm -rf /mnt/app/profilings"
@@ -30,6 +30,6 @@ manualProfiling:
 	ssh $(USER)@$(ADDRESS) "DISPLAY=:10 python $(MOUNTPOINT)/$(APP) --profiling" || true
 
 clean:
-	ssh $(USER)@$(ADDRESS) "sudo pgrep -f $(APP) | xargs kill" || true
+	ssh $(USER)@$(ADDRESS) "sudo pgrep -f $(APP) | xargs sudo kill" || true
 	@echo Done! && exit
 
